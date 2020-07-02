@@ -1,19 +1,33 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Project Proposal"
+author: "STOR 320.01 Group PLACE_GROUP_NUMBER_HERE (Ex: STOR 320.01 Group 12)"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
-```{r}
-plot(cars)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+# Project Roles
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+- **Creator:** Noah Wessels
+- **Interpreter:** Yunzhou Liu
+- **Orator 1:** Camryn Blawas
+- **Deliverer:** Noah Howell
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+# Dataset
 
+[Placement_Data_Full_Class](https://www.kaggle.com/benroshan/factors-affecting-campus-placement/data)
+
+# Initial Questions
+
+- **Question 1:** What is the relationship between gender and placement?
+- **Question 2:** Is there any collinearity between variables?
+- **Question 3:** Which categorical variables significantly impacts the Employability test result? 
+- **Question 4:** Are there any significant differences of salaries between different fields of undergraduate research?
+- **Question 5:** How much do one's grades influence post-graduate life (i.e. placement status, salary)?
+- **Question 6:** How good of a measure is the employability test of job placement?
+- **Question 7:** Do secondary education percentage and higher secondary education percentage have an effect on job placement placement?
+- **Question 8:** What is the effect of undergraduate degree type and MBA specialization on salary?
