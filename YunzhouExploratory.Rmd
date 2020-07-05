@@ -1,0 +1,21 @@
+---
+title: "Yunzhou - Exploratory Data Analysis"
+author: "Yunzhou Liu"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+```{r include=FALSE}
+library(readr)
+```
+
+# Import Dataset
+
+```{r message=FALSE}
+dt = read_csv('Placement_Data_Full_Class.csv')
+```
+
+### Question 1: Which categorical variables significantly impacts the Employability test result? 
+
+```{r}
+
+```
