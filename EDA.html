@@ -677,7 +677,7 @@ ggplot(Q8Data1, aes(x=Special, y=Salary))+
 <h3>Investigation of Follow-up Questions</h3>
 <p><span style="display:none"> GIVE WHAT 2 QUESTIONS YOU ATTEMPTED TO INVESTIGATE FURTHER IN COMPLETE SENTENCES (<em>Example:</em> Our group decided to investigate Q2 and Q4 in further detail.) </span></p>
 <p><span style="display:none"> SHOW AT LEAST 2 TABLES OR FIGURES BELOW THAT EXPLORE ANSWERS FOR THE QUESTIONS YOU ARE INVESTIGATING FURTHER. </span></p>
-<p>Our group decided to investigate <strong>Q2</strong> and <strong>Q4</strong> in further detail.</p>
+<p>Our group decided to investigate <strong>Q1</strong>, <strong>Q2</strong> and <strong>Q4</strong> in further detail.</p>
 <hr />
 <div id="q1" class="section level5">
 <h5>Q1</h5>
@@ -704,7 +704,7 @@ table </code></pre>
 ## 
 ## data:  table
 ## X-squared = 12.44, df = 1, p-value = 0.0004202</code></pre>
-<p>From the plot given, we can compare MBA specialization with job placement. The results of the chi-squared test indicate that we can reject the null hypothesis (that MBA specialization does not result in any effect on job placement) due to a statistically significant p-value of 0.0004202 (&lt;0.05).</p>
+<p>From the plot given, we can compare MBA specialization with job placement. The results of the chi-squared test indicate that we can reject the null hypothesis (that MBA specialization does not result in any effect on job placement) due to a statistically significant p-value of <strong>0.0004202 (&lt;0.05)</strong>.</p>
 <hr />
 </div>
 <div id="q2" class="section level5">
@@ -747,7 +747,7 @@ summary(Reg1Place)</code></pre>
 ## Multiple R-squared:  0.5411, Adjusted R-squared:  0.521 
 ## F-statistic: 26.86 on 9 and 205 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>This model includes all numerical variables that influence job placement. There are dummy variables created for Gender, High School Board of Education, Undergraduate Board of Education, Work Experience, and Job Status. In this model, we can conclude that several variables are statistically different from zero (High School Grade, Undergraduate Grade, MBA Grade, and Work Experience). Although, the marginal effect of these variables are all lower than 0.001. We can conclude that these variables have a slight positive relationship with job placement.</p>
-<p>One flaw of this model is that the R-squared is 0.521. This is relatively low, as it captures 52.1 percent of the variation within the data. Following this model, we plan on incorporating the other categorical variables into a regression to use all available information to find a better approximation of the marginal effects of determinant. One issue that we need to be wary of is using the R-squared as a measure of how good the next model accounts for variation because the R-squared can be inflated artificially through the addition of new variables. Additionally, we will run tests of goodness-of-fit (AIC and SIC tests) on the final model to see how well the model performs.</p>
+<p>One flaw of this model is that the R-squared is <strong>0.521</strong>. This is relatively low, as it captures 52.1 percent of the variation within the data. Following this model, we plan on incorporating the other categorical variables into a regression to use all available information to find a better approximation of the marginal effects of determinant. One issue that we need to be wary of is using the R-squared as a measure of how good the next model accounts for variation because the R-squared can be inflated artificially through the addition of new variables. Additionally, we will run tests of goodness-of-fit (AIC and SIC tests) on the final model to see how well the model performs.</p>
 <hr />
 </div>
 <div id="q4" class="section level5">
@@ -782,8 +782,14 @@ smr.with.UG_Specialization</code></pre>
 ## Residual standard error: 13.01 on 211 degrees of freedom
 ## Multiple R-squared:  0.05286,    Adjusted R-squared:  0.03939 
 ## F-statistic: 3.925 on 3 and 211 DF,  p-value: 0.009368</code></pre>
-<pre class="r"><code>anova.UG_Specialization[2, 6]</code></pre>
-<pre><code>## [1] 0.759515</code></pre>
+<pre class="r"><code>anova.UG_Specialization</code></pre>
+<pre><code>## Analysis of Variance Table
+## 
+## Model 1: EmploymentTest ~ UG_Grade
+## Model 2: EmploymentTest ~ UG_Grade + UG_Specialization
+##   Res.Df   RSS Df Sum of Sq      F Pr(&gt;F)
+## 1    213 35817                           
+## 2    211 35724  2    93.266 0.2754 0.7595</code></pre>
 <p>From the plot above, we can see that <code>degree percentage</code> might have a weak positive relationship with <code>employability test</code> score, while the <code>field of research</code> does not have a large impact on the overall relationship between <code>UG_Grade</code> and <code>EmploymentTest</code>. Hence, we can first conclude that <code>degree percentage</code> might be a significant factor for predicting <code>employability test</code> score, but different <code>field of study</code> might not affect the result of prediction from <code>degree percentage</code>.</p>
 <p>This can be proven by the model summary and anova table, where we first see that the model with both <code>UG_Grade</code> and <code>UG_Specialization</code> included gives a p-value of <u><span class="math inline">\(7.3556115\times 10^{-4}\)</span></u>. for <code>UG_Grade</code>, which is significant at 5% level. But both levels of <code>UG_Specialization</code> are not significant even at <strong>10% level</strong>, indicating that <code>UG_Specialization</code> might not be a good predictor for <code>EmploymentTest</code>.</p>
 <p>We then perform nested test to check if adding <code>UG_Specialization</code> would explain more variability of <code>EmploymentTest</code>, and the p-value provided is not significant (<u><span class="math inline">\(0.759515\)</span></u>) at 5% level. Hence, we can conclude that, <code>field of research</code> does not explain much extra variability for <code>EmploymentTest</code>.</p>
@@ -799,8 +805,7 @@ smr.with.UG_Specialization</code></pre>
 </ul>
 <p><span style="display:none">PARAGRAPH 2 SHOULD SUMMARIZE WHAT YOU LEARNED FROM INVESTIGATING THE FOLLOW-UP QUESTIONS. WHY ARE THESE FOLLOW-UP QUESTIONS INTERESTING FOR INVESTIGATION? DESCRIBE THE TABLES/FIGURES YOU USED TO EXPLORE ANSWERS TO THESE FOLLOW-UP QUESTIONS? WHAT DID YOU LEARN FROM THE TABLES/FIGURES REGARDING THE FOLLOW-UP QUESTIONS YOU PROPOSED?</span></p>
 <ul>
-<li><p>From question 1, we decided to investigate the relationship between MBA specialization and job placement because we wanted to see if a certain degree type was more likely to result in an employment opportunity. The figure and table used in this demonstrated that we can reject the null hypothesis (that MBA specialization does not result in any effect on job placement, due to a statistically signficant p-value. This would lead us to investigate further into the relationships between MBA specialization and job placement.</p></li>
-<li><p>For this analysis, we are primarily concerned about the interactions between different variables to determine which interaction terms should be added if we need to build a final model to predict Salary.</p></li>
+<li>For this analysis, we are primarily concerned about the interactions between different variables to determine which interaction terms should be added if we need to build a final model to predict Salary or Job Placement, and the most important observation from above analysis is that the employability test appears to be not closely related to many of these variables and hence might not be a good predictor for both Salary and Job Placement. On the other hand, we also notice some other variables that do have a influence on the subject we are predicting. For instance, from question 1, we decided to investigate the relationship between MBA specialization and job placement because we wanted to see if a certain degree type was more likely to result in an employment opportunity. The figure and table used in this demonstrated that we can reject the null hypothesis (that MBA specialization does not result in any effect on job placement, due to a statistically signficant p-value. This would lead us to investigate further into the relationships between MBA specialization and job placement.</li>
 </ul>
 </div>
 
