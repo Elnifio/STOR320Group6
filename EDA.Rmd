@@ -14,19 +14,38 @@ library(tidyverse)
 dt = read_csv('Placement_Data_Full_Class.csv')
 ```
 
-# Creator: FIRSTNAME LASTNAME
+# Creator: Noah Wessels
 
-### Q1: WRITE_QUESTION_HERE
-
-```{r}
-#
-```
-
-### Q2: WRITE_QUESTION_HERE
+### Q1: How much do one's grades influence post-graduate life (i.e. placement status, salary)?
 
 ```{r}
 #
+Q1D<- select(PlacementData,HSE_Grade,UG_Grade, MBA_Grade, JobStatus) %>% group_by(JobStatus) 
+ggplot(Q1D,aes(x=HSE_Grade,y=JobStatus))+ geom_boxplot() + coord_flip() + stat_boxplot() + ggtitle("High School Grade v. Job Status") +theme_classic()
+ggplot(Q1D,aes(x=UG_Grade,y=JobStatus))+ geom_boxplot() + coord_flip()+ stat_boxplot() + ggtitle("Undergraduate Grade v. Job Status")+ theme_classic()
+ggplot(Q1D,aes(x=MBA_Grade,y=JobStatus))+ geom_boxplot() + coord_flip() + stat_boxplot() + ggtitle("MBA Grade v. Job Status")+ theme_classic()
 ```
+From the graphs above, I would hypothesize that there is a significant impact of one's grades in High School as well as their Undergraduate career. There doesn't look to be much difference in the MBA grade and whether or not a person was placed into a job. In order to discuss the specific magnitudes we will need to account for the impact of each variable within a model with all other exploratory variables that impact Job Placement.
+
+```{r}
+#
+Q2D<- select(PlacementData,HSE_Grade,UG_Grade, MBA_Grade, Salary) %>% group_by(Salary)
+ggplot(Q2D,aes(x=UG_Grade,y=Salary))+ geom_point() + ggtitle("Undergraduate Grade v. Salary")+ theme_classic() 
+ggplot(Q2D,aes(x=HSE_Grade,y=Salary))+ geom_point() + ggtitle("High School Grade v. Salary") + theme_classic()
+ggplot(Q2D,aes(x=MBA_Grade,y=Salary))+ geom_point() + ggtitle("MBA Grade v. Salary")+ theme_classic()
+```
+From these graphs, it is difficult to discern a specific relationship between grades and salary. This could be due to outliers dragging the mean This will be explored more in the follow up question #3. 
+
+### Q2: How good of a measure is the employability test of job placement?
+
+```{r}
+#
+ggplot(PlacementData,aes(x=EmploymentTest,y=JobStatus)) + geom_boxplot() + stat_boxplot() + coord_flip() + ggtitle("Employment Test Quartiles by Job Status")+ theme_classic()
+JobStatus1 <-ifelse(PlacementData$JobStatus=="Placed", 1, 0)
+LM1 = lm(JobStatus1~EmploymentTest, data=PlacementData)
+summary(LM1)
+```
+At first glance it looks as though the boxplot would indicate that the better one does on their employment test, the more likely they will be placed into a job. Although, from the bivariate regression we can conclude that the coefficient of the Employment Test in this model is not statistically different from zero at a level of 5%.
 
 # Interpreter: Yunzhou Liu
 
@@ -143,7 +162,7 @@ GIVE WHAT 2 QUESTIONS YOU ATTEMPTED TO INVESTIGATE FURTHER IN COMPLETE SENTENCES
 
 SHOW AT LEAST 2 TABLES OR FIGURES BELOW THAT EXPLORE ANSWERS FOR THE QUESTIONS YOU ARE INVESTIGATING FURTHER.
 
-Our group decided to investigate Q1 and Q4 in further detail. 
+Our group decided to investigate Q2 and Q4 in further detail. 
 
 ```{r}
 # Q1
@@ -156,6 +175,21 @@ table
 prop.table(table)
 chisq.test(table)
 ```
+
+```{r}
+#Q2
+JobStatus1 <-ifelse(PlacementData$JobStatus=="Placed", 1, 0)
+SE_BoE1 <-ifelse(PlacementData$SE_BoE=="Central", 1, 0)
+HSE_BoE1 <-ifelse(PlacementData$HSE_BoE=="Central", 1, 0)
+WorkExp2 <-ifelse(PlacementData$WorkExp_1=="TRUE", 1, 0)
+Gender1 <-ifelse(PlacementData$Gender=="M", 1, 0)
+Reg1Place <- lm(JobStatus1 ~ Gender1+SE_Grade+SE_BoE1+HSE_Grade+HSE_BoE1+UG_Grade+WorkExp2+EmploymentTest+MBA_Grade, data = PlacementData)
+summary(Reg1Place)
+```
+
+This model includes all numerical variables that influence job placement. There are dummy variables created for Gender, High School Board of Education, Undergraduate Board of Education, Work Experience, and Job Status. In this model, we can conclude that several variables are statistically different from zero (High School Grade, Undergraduate Grade, MBA Grade, and Work Experience). Although, the marginal effect of these variables are all lower than 0.001. We can conclude that these variables have a slight positive relationship with job placement. 
+
+One flaw of this model is that the R-squared is 0.521. This is relatively low, as it captures 52.1 percent of the variation within the data. Following this model, we plan on incorporating the other categorical variables into a regression to use all available information to find a better approximation of the marginal effects of determinant. One issue that we need to be wary of is using the R-squared as a measure of how good the next model accounts for variation because the R-squared can be inflated artificially through the addition of new variables. Additionally, we will run tests of goodness-of-fit (AIC and SIC tests) on the final model to see how well the model performs. 
 
 From the plot given, we can compare MBA specialization with job placement. The results of the chi-squared test indicate that we can reject the null hypothesis (that MBA specialization does not result in any effect on job placement) due to a statistically significant p-value of 0.0004202 (<0.05).  
 
