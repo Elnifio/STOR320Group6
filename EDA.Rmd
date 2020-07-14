@@ -104,18 +104,28 @@ ggplot(Q8Data1, aes(x=Special, y=Salary))+
 This graph leads us to believe that there is no significant effect of undergraduate degree type and MBA specialization on salary. However, more statistical analyses will be needed to determine if this is true. 
 
 
-# Deliverer: FIRSTNAME LASTNAME
+# Deliverer: Noah Howell
 
-### Q1: WRITE_QUESTION_HERE
+### Q1: What is the relationship between gender and placement?
 
 ```{r}
-#
+data <- read.csv("PlacementData.csv")
+head(data)
+ggplot(data, 
+       aes(x = Gender, 
+           fill = JobStatus)) + 
+  geom_bar(position = "dodge")
 ```
 
-### Q2: WRITE_QUESTION_HERE
+### Q2: Does work experience have any impact on placement?
 
 ```{r}
-#
+data <- read.csv("PlacementData.csv")
+head(data)
+ggplot(data, 
+       aes(x = WorkExp.1, 
+           fill = JobStatus)) + 
+  geom_bar(position = "dodge")
 ```
 
 # Follow-up Questions
