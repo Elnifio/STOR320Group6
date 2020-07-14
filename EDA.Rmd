@@ -59,18 +59,44 @@ And we propose our Null and Alternative Hypotheses:
 
 We can see from the Tukey HSD test above that all of these adjusted p-values are larger than 5%, which means that we reject our alternative hypothesis, and there **isn't a significant difference in salary between different field of study**.
 
-# Orator: FIRSTNAME LASTNAME
+# Orator: Camryn Blawas
 
-### Q1: WRITE_QUESTION_HERE
+### Q1: Do secondary education percentage and higher secondary education percentage have an effect on job placement ?
 
 ```{r}
-#
+SE_Data = select(PlacementData, "SE_Grade", "JobStatus")
+SE_Data = mutate(SE_Data, Year = ifelse(is.na(SE_Grade), NA, "SE_Grade"), Grade = SE_Grade)
+SE_Data1 = select(SE_Data, "Grade", "JobStatus", "Year")
+HSE_Data = select(PlacementData, "HSE_Grade", "JobStatus")
+HSE_Data = mutate(HSE_Data, Year = ifelse(is.na(HSE_Grade), NA, "HSE_Grade"), Grade = HSE_Grade)
+HSE_Data1 = select(HSE_Data, "Grade", "JobStatus", "Year")
+All_Grades = rbind(SE_Data1, HSE_Data1)
+ggplot(All_Grades,aes(x=JobStatus, y=Grade, fill=Year)) +
+  geom_boxplot() +
+  stat_boxplot(geom = 'errorbar')
 ```
 
-### Q2: WRITE_QUESTION_HERE
+### Q2: What is the effect of undergraduate degree type and MBA specialization on salary?
 
 ```{r}
-#
+SciTechUG_MktFinMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
+SciTechUG_MktFinMBA = mutate(SciTechUG_MktFinMBA, Special = ifelse(UG_Specialization == "Sci&Tech" & MBA_Specialization == "Mkt&Fin","SciTechUG_MktFinMBA", NA))
+SciTechUG_MktHRMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
+SciTechUG_MktHRMBA = mutate(SciTechUG_MktHRMBA, Special = ifelse(UG_Specialization == "Sci&Tech" & MBA_Specialization == "Mkt&HR","SciTechUG_MktHRMBA", NA))
+CommMgmtUG_MktFinMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
+CommMgmtUG_MktFinMBA = mutate(CommMgmtUG_MktFinMBA, Special = ifelse(UG_Specialization == "Comm&Mgmt" & MBA_Specialization == "Mkt&Fin","CommMgmtUG_MktFinMBA", NA))
+CommMgmtUG_MktHRMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
+CommMgmtUG_MktHRMBA = mutate(CommMgmtUG_MktHRMBA, Special = ifelse(UG_Specialization == "Comm&Mgmt" & MBA_Specialization == "Mkt&HR","CommMgmtUG_MktHRMBA", NA))
+OtherUG_MktFinMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
+OtherUG_MktFinMBA = mutate(OtherUG_MktFinMBA, Special = ifelse(UG_Specialization == "Others" & MBA_Specialization == "Mkt&Fin","OtherUG_MktFinMBA", NA))
+OtherUG_MktHRMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
+OtherUG_MktHRMBA = mutate(CommMgmtUG_MktHRMBA, Special = ifelse(UG_Specialization == "Others" & MBA_Specialization == "Mkt&HR","OtherUG_MktHRMBA", NA))
+Q8Data= rbind(SciTechUG_MktFinMBA, SciTechUG_MktHRMBA, CommMgmtUG_MktFinMBA, CommMgmtUG_MktHRMBA, OtherUG_MktFinMBA, OtherUG_MktHRMBA)
+Q8Data1 = na.omit(Q8Data)
+ggplot(Q8Data1, aes(x=Special, y=Salary))+
+  geom_boxplot() +
+  stat_boxplot(geom = 'errorbar') +
+  coord_flip()
 ```
 
 # Deliverer: FIRSTNAME LASTNAME
