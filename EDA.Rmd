@@ -64,6 +64,7 @@ We can see from the Tukey HSD test above that all of these adjusted p-values are
 ### Q1: Do secondary education percentage and higher secondary education percentage have an effect on job placement ?
 
 ```{r}
+PlacementData = read.csv("PlacementData.csv")
 SE_Data = select(PlacementData, "SE_Grade", "JobStatus")
 SE_Data = mutate(SE_Data, Year = ifelse(is.na(SE_Grade), NA, "SE_Grade"), Grade = SE_Grade)
 SE_Data1 = select(SE_Data, "Grade", "JobStatus", "Year")
@@ -79,6 +80,7 @@ ggplot(All_Grades,aes(x=JobStatus, y=Grade, fill=Year)) +
 ### Q2: What is the effect of undergraduate degree type and MBA specialization on salary?
 
 ```{r}
+PlacementData = read.csv("PlacementData.csv")
 SciTechUG_MktFinMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
 SciTechUG_MktFinMBA = mutate(SciTechUG_MktFinMBA, Special = ifelse(UG_Specialization == "Sci&Tech" & MBA_Specialization == "Mkt&Fin","SciTechUG_MktFinMBA", NA))
 SciTechUG_MktHRMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
@@ -131,8 +133,18 @@ SHOW AT LEAST 2 TABLES OR FIGURES BELOW THAT EXPLORE ANSWERS FOR THE QUESTIONS Y
 Our group decided to investigate Q1 and Q4 in further detail. 
 
 ```{r}
-#
+# Q1
+PlacementData = read.csv("PlacementData.csv")
+attach(PlacementData)
+ggplot(PlacementData, aes(x=MBA_Specialization, fill=JobStatus))+
+  geom_bar()
+table <- table(JobStatus, MBA_Specialization) 
+table 
+prop.table(table)
+chisq.test(table)
 ```
+
+From the plot given, we can compare MBA specialization with job placement. The results of the chi-squared test indicate that we can reject the null hypothesis (that MBA specialization does not result in any effect on job placement) due to a statistically significant p-value of 0.0004202 (<0.05).  
 
 ```{r}
 # Q4
