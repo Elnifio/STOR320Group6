@@ -181,6 +181,7 @@ chisq.test(table)
 
 ```{r}
 #Q2
+PlacementData = read.csv("PlacementData.csv")
 JobStatus1 <-ifelse(PlacementData$JobStatus=="Placed", 1, 0)
 SE_BoE1 <-ifelse(PlacementData$SE_BoE=="Central", 1, 0)
 HSE_BoE1 <-ifelse(PlacementData$HSE_BoE=="Central", 1, 0)
