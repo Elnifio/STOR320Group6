@@ -11,7 +11,7 @@ library(tidyverse)
 
 # Import Data Below
 # read_csv()
-dt = read_csv('Placement_Data_Full_Class.csv')
+PlacementData = read_csv('PlacementData.csv')
 ```
 
 # Creator: Noah Wessels
@@ -55,19 +55,19 @@ At first glance it looks as though the boxplot would indicate that the better on
 #
 # Need to first drop the NAs
 # Test for correlation
-wo.NA = dt %>% filter(!is.na(etest_p) & !is.na(salary))
-cor(wo.NA$etest_p, wo.NA$salary)
-wo.NA %>% ggplot(mapping=aes(x=etest_p, y=salary))+geom_point()+geom_smooth()
+wo.NA = PlacementData %>% filter(!is.na(EmploymentTest) & !is.na(Salary))
+cor(wo.NA$EmploymentTest, wo.NA$Salary)
+wo.NA %>% ggplot(mapping=aes(x=EmploymentTest, y=Salary))+geom_point()+geom_smooth()
 ```
 
-The `cor` output gives us the correlation between `employability test` and `salary`, which is `r cor(wo.NA$etest_p, wo.NA$salary)`. And thus we can see that there is a **weak positive correlation** between `employability test` and `salary`. 
+The `cor` output gives us the correlation between `employability test` and `salary`, which is `r cor(wo.NA$EmploymentTest, wo.NA$Salary)`. And thus we can see that there is a **weak positive correlation** between `employability test` and `salary`. 
 
 ### Q2: Are there any significant differences of salaries between different fields of undergraduate research?
 
 ```{r}
-wo.NA2 = dt %>% filter(!is.na(degree_t) & !is.na(salary))
-wo.NA2 %>% ggplot(mapping=aes(x=degree_t, y=salary))+geom_boxplot()+geom_point(data=wo.NA2 %>% group_by(degree_t) %>% summarise(deg.mean = mean(salary)) %>% ungroup(), mapping=aes(x=degree_t, y=deg.mean, color='red'))
-TukeyHSD(aov(salary~degree_t, data=wo.NA2))
+wo.NA2 = PlacementData %>% filter(!is.na(UG_Specialization) & !is.na(Salary))
+wo.NA2 %>% ggplot(mapping=aes(x=UG_Specialization, y=Salary))+geom_boxplot()+geom_point(data=wo.NA2 %>% group_by(UG_Specialization) %>% summarise(deg.mean = mean(Salary)) %>% ungroup(), mapping=aes(x=UG_Specialization, y=deg.mean, color='red'))
+TukeyHSD(aov(Salary~UG_Specialization, data=wo.NA2))
 ```
 
 From the boxplot above, we can assume that there is not a significant differences of salaries between different fields of undergraduate research. 
@@ -195,23 +195,23 @@ From the plot given, we can compare MBA specialization with job placement. The r
 
 ```{r}
 # Q4
-ggplot(data=dt, mapping=aes(x=degree_p, y=etest_p, color=degree_t))+geom_point()+geom_smooth()
+ggplot(data=PlacementData, mapping=aes(x=UG_Grade, y=EmploymentTest, color=UG_Specialization))+geom_point()+geom_smooth()
 
-without.degree_t = lm(etest_p~degree_p, data=dt)
-with.degree_t = lm(etest_p~degree_p+degree_t, data=dt)
-smr.with.degree_t = summary(with.degree_t)
-anova.degree_t = anova(without.degree_t, with.degree_t)
-smr.with.degree_t
-anova.degree_t[2, 6]
+without.UG_Specialization = lm(EmploymentTest~UG_Grade, data=PlacementData)
+with.UG_Specialization = lm(EmploymentTest~UG_Grade+UG_Specialization, data=PlacementData)
+smr.with.UG_Specialization = summary(with.UG_Specialization)
+anova.UG_Specialization = anova(without.UG_Specialization, with.UG_Specialization)
+smr.with.UG_Specialization
+anova.UG_Specialization[2, 6]
 ```
 
-From the plot above, we can see that `degree percentage` might have a weak positive relationship with `employability test` score, while the `field of research` does not have a large impact on the overall relationship between `degree_p` and `etest_p`. 
+From the plot above, we can see that `degree percentage` might have a weak positive relationship with `employability test` score, while the `field of research` does not have a large impact on the overall relationship between `UG_Grade` and `EmploymentTest`. 
 Hence, we can first conclude that `degree percentage` might be a significant factor for predicting `employability test` score, but different `field of study` might not affect the result of prediction from `degree percentage`. 
 
-This can be proven by the model summary and anova table, where we first see that the model with both `degree_p` and `degree_t` included gives a p-value of `r smr.with.degree_t$coefficients[2, 4]` for `degree_p` , which is significant at 5% level. 
-But both levels of `degree_t` are not significant even at 10% level, indicating that `degree_t` might not be a good predictor for `etest_p`. 
+This can be proven by the model summary and anova table, where we first see that the model with both `UG_Grade` and `UG_Specialization` included gives a p-value of `r smr.with.UG_Specialization$coefficients[2, 4]` for `UG_Grade` , which is significant at 5% level. 
+But both levels of `UG_Specialization` are not significant even at 10% level, indicating that `UG_Specialization` might not be a good predictor for `EmploymentTest`. 
 
-We then perform nested test to check if adding `degree_t` would explain more variability of `etest_p`, and the p-value provided is not significant (`r anova.degree_t[2, 6]`) at 5% level. Hence, we can conclude that , `field of research` does not explain much extra variability for `etest_p`. 
+We then perform nested test to check if adding `UG_Specialization` would explain more variability of `EmploymentTest`, and the p-value provided is not significant (`r anova.UG_Specialization[2, 6]`) at 5% level. Hence, we can conclude that , `field of research` does not explain much extra variability for `EmploymentTest`. 
 
 # Summary
 
