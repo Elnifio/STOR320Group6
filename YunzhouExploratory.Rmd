@@ -6,6 +6,7 @@ output: html_document
 ---
 ```{r include=FALSE}
 library(readr)
+library(tidyverse)
 ```
 
 # Import Dataset
@@ -14,8 +15,30 @@ library(readr)
 dt = read_csv('Placement_Data_Full_Class.csv')
 ```
 
-### Question 1: Which categorical variables significantly impacts the Employability test result? 
+### Question 1: Is there a correlation between employability test and salary?
 
 ```{r}
-
+# Need to first drop the NAs
+# Test for correlation
+wo.NA = dt %>% filter(!is.na(etest_p) & !is.na(salary))
+cor(wo.NA$etest_p, wo.NA$salary)
+wo.NA %>% ggplot(mapping=aes(x=etest_p, y=salary))+geom_point()+geom_smooth()
 ```
+
+From the `cor` function output, we can see that there is a weak positive correlation between `employability test` and `salary`. 
+
+### Question 2: Are there any significant differences of salaries between different fields of undergraduate research?
+
+```{r}
+wo.NA2 = dt %>% filter(!is.na(degree_t) & !is.na(salary))
+wo.NA2 %>% ggplot(mapping=aes(x=degree_t, y=salary))+geom_boxplot()+geom_point(data=wo.NA2 %>% group_by(degree_t) %>% summarise(deg.mean = mean(salary)) %>% ungroup(), mapping=aes(x=degree_t, y=deg.mean, color='red'))
+TukeyHSD(aov(salary~degree_t, data=wo.NA2))
+```
+
+From the boxplot above, we can assume that there is not a significant differences of salaries between different fields of undergraduate research. 
+And we propose our Null and Alternative Hypotheses: 
+
+- Null Hypothesis $H_{0, i, j}$: There is **no difference** in mean between two groups of different field of undergraduate research for any two groups ${i, j}$
+- Alternative Hypothesis $H_{A, i, j}$: There is **at least one group** with mean significantly different from another group. 
+
+We can see from the Tukey HSD test above that all of these adjusted p-values are larger than 5%, which means that we reject our alternative hypothesis, and there **isn't a significant difference in salary between different field of study**.
