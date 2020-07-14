@@ -20,7 +20,8 @@ dt = read_csv('Placement_Data_Full_Class.csv')
 
 ```{r}
 #
-Q1D<- select(PlacementData,HSE_Grade,UG_Grade, MBA_Grade, JobStatus) %>% group_by(JobStatus) 
+Q1D<- select(PlacementData,SE_Grade, HSE_Grade,UG_Grade, MBA_Grade, JobStatus) %>% group_by(JobStatus) 
+ggplot(Q1D,aes(x=SE_Grade,y=JobStatus))+ geom_boxplot() + coord_flip() + stat_boxplot() + ggtitle("10th Grade Grades v. Job Status") +theme_classic()
 ggplot(Q1D,aes(x=HSE_Grade,y=JobStatus))+ geom_boxplot() + coord_flip() + stat_boxplot() + ggtitle("High School Grade v. Job Status") +theme_classic()
 ggplot(Q1D,aes(x=UG_Grade,y=JobStatus))+ geom_boxplot() + coord_flip()+ stat_boxplot() + ggtitle("Undergraduate Grade v. Job Status")+ theme_classic()
 ggplot(Q1D,aes(x=MBA_Grade,y=JobStatus))+ geom_boxplot() + coord_flip() + stat_boxplot() + ggtitle("MBA Grade v. Job Status")+ theme_classic()
@@ -29,10 +30,12 @@ From the graphs above, I would hypothesize that there is a significant impact of
 
 ```{r}
 #
-Q2D<- select(PlacementData,HSE_Grade,UG_Grade, MBA_Grade, Salary) %>% group_by(Salary)
-ggplot(Q2D,aes(x=UG_Grade,y=Salary))+ geom_point() + ggtitle("Undergraduate Grade v. Salary")+ theme_classic() 
+Q2D<- select(PlacementData,SE_Grade, HSE_Grade,UG_Grade, MBA_Grade, Salary) %>% group_by(Salary)
+ggplot(Q2D,aes(x=SE_Grade,y=Salary))+ geom_point() + ggtitle("10th Grade Grades v. Salary") + theme_classic()
 ggplot(Q2D,aes(x=HSE_Grade,y=Salary))+ geom_point() + ggtitle("High School Grade v. Salary") + theme_classic()
+ggplot(Q2D,aes(x=UG_Grade,y=Salary))+ geom_point() + ggtitle("Undergraduate Grade v. Salary")+ theme_classic() 
 ggplot(Q2D,aes(x=MBA_Grade,y=Salary))+ geom_point() + ggtitle("MBA Grade v. Salary")+ theme_classic()
+summarize(Q2D, SEmean=mean(SE_Grade), HSEmean=mean(HSE_Grade), UGmean=mean(UG_Grade), MBAmean=mean(MBA_Grade))
 ```
 From these graphs, it is difficult to discern a specific relationship between grades and salary. This could be due to outliers dragging the mean This will be explored more in the follow up question #3. 
 
