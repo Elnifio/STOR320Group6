@@ -76,6 +76,7 @@ ggplot(All_Grades,aes(x=JobStatus, y=Grade, fill=Year)) +
   geom_boxplot() +
   stat_boxplot(geom = 'errorbar')
 ```
+This graph leads us to believe there is a relationship between secondary education grades and job placement. More statistical analyses will be necessary to positively determine this relationship. 
 
 ### Q2: What is the effect of undergraduate degree type and MBA specialization on salary?
 
@@ -100,6 +101,8 @@ ggplot(Q8Data1, aes(x=Special, y=Salary))+
   stat_boxplot(geom = 'errorbar') +
   coord_flip()
 ```
+This graph leads us to believe that there is no significant effect of undergraduate degree type and MBA specialization on salary. However, more statistical analyses will be needed to determine if this is true. 
+
 
 # Deliverer: FIRSTNAME LASTNAME
 
@@ -171,9 +174,10 @@ We then perform nested test to check if adding `degree_t` would explain more var
 GIVE A 2 PARAGRAPH SUMMARY. 
 
 PARAGRAPH 1 SHOULD DESCRIBE WHAT YOU LEARNED ABOUT YOUR DATA FROM INVESTIGATING THE INITIAL QUESTIONS. DID YOU FIND ANYTHING UNUSUAL IN YOUR DATA? DID ANYTHING SURPRISE YOU? WHICH OF THE INITIAL QUESTIONS WERE HELPFUL IN LEADING YOU TO MORE QUESTIONS?
+- Something that suprised me was the effect of secondary education grades on job placement, and the lack of effect of both degree types on salary.  
 
 PARAGRAPH 2 SHOULD SUMMARIZE WHAT YOU LEARNED FROM INVESTIGATING THE FOLLOW-UP QUESTIONS. WHY ARE THESE FOLLOW-UP QUESTIONS INTERESTING FOR INVESTIGATION? DESCRIBE THE TABLES/FIGURES YOU USED TO EXPLORE ANSWERS TO THESE FOLLOW-UP QUESTIONS? WHAT DID YOU LEARN FROM THE TABLES/FIGURES REGARDING THE FOLLOW-UP QUESTIONS YOU PROPOSED?
-
+- From question 1, we decided to investigate the relationship between MBA specialization and job placement because we wanted to see if a certain degree type was more likely to result in an employment opportunity. The figure and table used in this demonstrated that we can reject the null hypothesis (that MBA specialization does not result in any effect on job placement, due to a statistically signficant p-value. This would lead us to investigate further into the relationships between MBA specialization and job placement. 
 
 
 
