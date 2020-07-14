@@ -1,6 +1,6 @@
 ---
 title: "Exploratory Data Analysis"
-author: "STOR 320.(01 OR 02) Group PLACE_GROUP_NUMBER_HERE (Ex: STOR 320.01 Group 12)"
+author: "STOR 320.(01) Group 6 (Ex: STOR 320.01 Group 12)"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 ---
@@ -91,10 +91,10 @@ We can see from the Tukey HSD test above that all of these adjusted p-values are
 
 ### New Questions Based Off Initial Investigation
 
-- Q1: WRITE_QUESTION_HERE
-- Q2: WRITE_QUESTION_HERE
-- Q3: WRITE_QUESTION_HERE 
-- Q4: WRITE_QUESTION_HERE
+- Q1: What is the relationship between MBA specialization and job placement?
+- Q2: What determines if individuals are placed?
+- Q3: Can we predict the salary of those who are placed?
+- Q4: How is the undergraduate experience (degree percentage & field of study) relate to the employability test score? 
 
 ### Investigation of Follow-up Questions
 
@@ -102,13 +102,31 @@ GIVE WHAT 2 QUESTIONS YOU ATTEMPTED TO INVESTIGATE FURTHER IN COMPLETE SENTENCES
 
 SHOW AT LEAST 2 TABLES OR FIGURES BELOW THAT EXPLORE ANSWERS FOR THE QUESTIONS YOU ARE INVESTIGATING FURTHER.
 
+Our group decided to investigate Q1 and Q4 in further detail. 
+
 ```{r}
 #
 ```
 
 ```{r}
-#
+# Q4
+ggplot(data=dt, mapping=aes(x=degree_p, y=etest_p, color=degree_t))+geom_point()+geom_smooth()
+
+without.degree_t = lm(etest_p~degree_p, data=dt)
+with.degree_t = lm(etest_p~degree_p+degree_t, data=dt)
+smr.with.degree_t = summary(with.degree_t)
+anova.degree_t = anova(without.degree_t, with.degree_t)
+smr.with.degree_t
+anova.degree_t[2, 6]
 ```
+
+From the plot above, we can see that `degree percentage` might have a weak positive relationship with `employability test` score, while the `field of research` does not have a large impact on the overall relationship between `degree_p` and `etest_p`. 
+Hence, we can first conclude that `degree percentage` might be a significant factor for predicting `employability test` score, but different `field of study` might not affect the result of prediction from `degree percentage`. 
+
+This can be proven by the model summary and anova table, where we first see that the model with both `degree_p` and `degree_t` included gives a p-value of `r smr.with.degree_t$coefficients[2, 4]` for `degree_p` , which is significant at 5% level. 
+But both levels of `degree_t` are not significant even at 10% level, indicating that `degree_t` might not be a good predictor for `etest_p`. 
+
+We then perform nested test to check if adding `degree_t` would explain more variability of `etest_p`, and the p-value provided is not significant (`r anova.degree_t[2, 6]`) at 5% level. Hence, we can conclude that , `field of research` does not explain much extra variability for `etest_p`. 
 
 # Summary
 
