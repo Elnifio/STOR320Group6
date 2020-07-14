@@ -138,6 +138,7 @@ ggplot(data,
            fill = JobStatus)) + 
   geom_bar(position = "dodge")
 ```
+From the bar graph it is easy to see that a little more males were rejected than females, but the number of males that placed is double the number of females.
 
 ### Q2: Does work experience have any impact on placement?
 
@@ -149,6 +150,7 @@ ggplot(data,
            fill = JobStatus)) + 
   geom_bar(position = "dodge")
 ```
+Looking at the graph, it is clear how big of an impact work experience has on job placement. It appears that having experience significantly improves your chances of job placement.
 
 # Follow-up Questions
 
