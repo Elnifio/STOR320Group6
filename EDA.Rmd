@@ -86,7 +86,7 @@ We can see from the Tukey HSD test above that all of these adjusted p-values are
 ### Q1: Do secondary education percentage and higher secondary education percentage have an effect on job placement ?
 
 ```{r}
-PlacementData = read.csv("PlacementData.csv")
+PlacementData = read_csv("PlacementData.csv")
 SE_Data = select(PlacementData, "SE_Grade", "JobStatus")
 SE_Data = mutate(SE_Data, Year = ifelse(is.na(SE_Grade), NA, "SE_Grade"), Grade = SE_Grade)
 SE_Data1 = select(SE_Data, "Grade", "JobStatus", "Year")
@@ -103,7 +103,7 @@ This graph leads us to believe there is a relationship between secondary educati
 ### Q2: What is the effect of undergraduate degree type and MBA specialization on salary?
 
 ```{r}
-PlacementData = read.csv("PlacementData.csv")
+PlacementData = read_csv("PlacementData.csv")
 SciTechUG_MktFinMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
 SciTechUG_MktFinMBA = mutate(SciTechUG_MktFinMBA, Special = ifelse(UG_Specialization == "Sci&Tech" & MBA_Specialization == "Mkt&Fin","SciTechUG_MktFinMBA", NA))
 SciTechUG_MktHRMBA = select(PlacementData, UG_Specialization, MBA_Specialization, Salary)
@@ -131,7 +131,7 @@ This graph leads us to believe that there is no significant effect of undergradu
 ### Q1: What is the relationship between gender and placement?
 
 ```{r}
-data <- read.csv("PlacementData.csv")
+data <- read_csv("PlacementData.csv")
 head(data)
 ggplot(data, 
        aes(x = Gender, 
@@ -142,10 +142,10 @@ ggplot(data,
 ### Q2: Does work experience have any impact on placement?
 
 ```{r}
-data <- read.csv("PlacementData.csv")
+data <- read_csv("PlacementData.csv")
 head(data)
 ggplot(data, 
-       aes(x = WorkExp.1, 
+       aes(x = WorkExp_1, 
            fill = JobStatus)) + 
   geom_bar(position = "dodge")
 ```
@@ -169,7 +169,7 @@ Our group decided to investigate Q2 and Q4 in further detail.
 
 ```{r}
 # Q1
-PlacementData = read.csv("PlacementData.csv")
+PlacementData = read_csv("PlacementData.csv")
 attach(PlacementData)
 ggplot(PlacementData, aes(x=MBA_Specialization, fill=JobStatus))+
   geom_bar()
@@ -181,7 +181,7 @@ chisq.test(table)
 
 ```{r}
 #Q2
-PlacementData = read.csv("PlacementData.csv")
+PlacementData = read_csv("PlacementData2.csv")
 JobStatus1 <-ifelse(PlacementData$JobStatus=="Placed", 1, 0)
 SE_BoE1 <-ifelse(PlacementData$SE_BoE=="Central", 1, 0)
 HSE_BoE1 <-ifelse(PlacementData$HSE_BoE=="Central", 1, 0)
