@@ -51,3 +51,29 @@ ggplot(All_Grades,aes(x=JobStatus, y=Grade, fill=Year)) +
   stat_boxplot(geom = 'errorbar')
 ```
 This graph shows the relationship between average grade in each level of education and Job Placement. This visualization would appear to indicate that individuals that have been placed in the job market performed better in their secondary education, higher secondary education, undergraduate education. Yet, there doesn't appear to be a large difference in MBA grades between individuals who were placed and those that were not. This lack of difference in MBA performance intrigued us and spurred the question: What determines Job Placement? 
+
+
+```{r}
+RegressionData = PlacementData
+RegressionData$JobStatus <-ifelse(PlacementData$JobStatus=="Placed", 1, 0)
+RegressionData$SE_BoE <-ifelse(PlacementData$SE_BoE=="Central", 1, 0)
+RegressionData$HSE_BoE <-ifelse(PlacementData$HSE_BoE=="Central", 1, 0)
+RegressionData$WorkExp <-ifelse(PlacementData$WorkExp_1=="TRUE", 1, 0)
+RegressionData$Gender <-ifelse(PlacementData$Gender=="M", 1, 0)
+RegressionData$UG_Specialization <-ifelse(PlacementData$UG_Specialization=="Comm&Mgmt",1,0)
+RegressionData$HSE_SpecializationD1 <-ifelse(PlacementData$HSE_Specialization=="Commerce",1,0)
+RegressionData$HSE_SpecializationD2 <-ifelse(PlacementData$HSE_Specialization=="Arts",1,0)
+RegressionData$MBA_Specialization <-ifelse(PlacementData$MBA_Specialization=="Mkt&Fin",1,0)
+RegressionDataFinal <-select(RegressionData,"Gender","SE_Grade","SE_BoE","HSE_Grade", "HSE_BoE","HSE_SpecializationD1","HSE_SpecializationD2","UG_Grade", "UG_Specialization","WorkExp","EmploymentTest","MBA_Specialization","MBA_Grade","Salary")
+RegressionDataFinal <- RegressionDataFinal[complete.cases(RegressionDataFinal),]
+Regression1<-lm(Salary~Gender+MBA_Grade+WorkExp,data=RegressionDataFinal)
+summary(Regression1)
+Regression2<-lm(Salary~Gender+MBA_Grade+MBA_Specialization+WorkExp,data=RegressionDataFinal)
+summary(Regression2)
+Regression3<-lm(Salary~Gender+MBA_Grade+MBA_Specialization+WorkExp+EmploymentTest+UG_Grade+UG_Specialization,data=RegressionDataFinal)
+summary(Regression3)
+Regression4<-lm(Salary~Gender+MBA_Grade+MBA_Specialization+WorkExp+EmploymentTest+UG_Grade+UG_Specialization+HSE_SpecializationD1+HSE_SpecializationD2+HSE_BoE+HSE_Grade,data=RegressionDataFinal)
+summary(Regression4)
+Regression5<-lm(Salary~.,data=RegressionDataFinal)
+summary(Regression5)
+```
