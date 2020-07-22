@@ -24,6 +24,10 @@ LogisticRegData <- mutate(PlacementData, HSE_BoE= as.factor(PlacementData$HSE_Bo
 LogisticRegData1<-select(LogisticRegData, Gender, SE_Grade, SE_BoE, HSE_Grade, HSE_BoE, HSE_Specialization, UG_Grade, UG_Specialization, WorkExp, EmploymentTest, MBA_Specialization, MBA_Grade, JobStatus)
 LogisticRegression <- glm(JobStatus~ ., family="binomial", data=LogisticRegData1)
 summary(LogisticRegression)
+PredictedData <- data.frame(ProbPlaced= LogisticRegression$fitted.values, JobStatus=LogisticRegData1$JobStatus)
+PredictedData <- PredictedData[order(PredictedData$ProbPlaced, decreasing=FALSE),]
+PredictedData$Rank <- 1:nrow(PredictedData)
+ggplot(data=PredictedData) + geom_point(aes(x=Rank, y=ProbPlaced, color=JobStatus), alpha=1, shape=4, stroke=2) + ylab("Predicted Probability of Job Status") 
 ```
 
 
