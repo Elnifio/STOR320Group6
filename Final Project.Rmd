@@ -1,0 +1,49 @@
+---
+title: "Final Project"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+library(modelr)
+PlacementData = read_csv('PlacementData.csv')
+```
+
+```{r}
+PlacementData %>% group_by(Gender) %>% summarize(Count=n()) %>% mutate(Percentage=Count/sum(Count)) %>% kable() 
+LogisticRegData <- mutate(PlacementData, HSE_BoE= as.factor(PlacementData$HSE_BoE),SE_BoE= as.factor(PlacementData$SE_BoE),HSE_Specialization= as.factor(PlacementData$HSE_Specialization), UG_Specialization= as.factor(PlacementData$UG_Specialization),WorkExp= as.factor(PlacementData$WorkExp),MBA_Specialization= as.factor(PlacementData$MBA_Specialization), JobStatus= as.factor(PlacementData$JobStatus), Gender = as.factor(PlacementData$Gender))
+LogisticRegData1<-select(LogisticRegData, Gender, SE_Grade, SE_BoE, HSE_Grade, HSE_BoE, HSE_Specialization, UG_Grade, UG_Specialization, WorkExp, EmploymentTest, MBA_Specialization, MBA_Grade, JobStatus)
+kable(LogisticRegData1 [1:10, 1:13]) 
+```
+
+
+```{r}
+LogisticRegData <- mutate(PlacementData, HSE_BoE= as.factor(PlacementData$HSE_BoE),SE_BoE= as.factor(PlacementData$SE_BoE),HSE_Specialization= as.factor(PlacementData$HSE_Specialization), UG_Specialization= as.factor(PlacementData$UG_Specialization),WorkExp= as.factor(PlacementData$WorkExp),MBA_Specialization= as.factor(PlacementData$MBA_Specialization), JobStatus= as.factor(PlacementData$JobStatus), Gender = as.factor(PlacementData$Gender))
+LogisticRegData1<-select(LogisticRegData, Gender, SE_Grade, SE_BoE, HSE_Grade, HSE_BoE, HSE_Specialization, UG_Grade, UG_Specialization, WorkExp, EmploymentTest, MBA_Specialization, MBA_Grade, JobStatus)
+LogisticRegression <- glm(JobStatus~ ., family="binomial", data=LogisticRegData1)
+summary(LogisticRegression)
+```
+
+
+```{r}
+PlacementData = read.csv("PlacementData.csv")
+SE_Data = select(PlacementData, "SE_Grade", "JobStatus")
+SE_Data = mutate(SE_Data, Year = ifelse(is.na(SE_Grade), NA, "SE_Grade"), Grade = SE_Grade)
+SE_Data1 = select(SE_Data, "Grade", "JobStatus", "Year")
+HSE_Data = select(PlacementData, "HSE_Grade", "JobStatus")
+HSE_Data = mutate(HSE_Data, Year = ifelse(is.na(HSE_Grade), NA, "HSE_Grade"), Grade = HSE_Grade)
+HSE_Data1 = select(HSE_Data, "Grade", "JobStatus", "Year")
+UG_Data = select(PlacementData, "UG_Grade", "JobStatus")
+UG_Data = mutate(UG_Data, Year = ifelse(is.na(UG_Grade), NA, "UG_Grade"), Grade = UG_Grade)
+UG_Data1 = select(UG_Data, "Grade", "JobStatus", "Year")
+MBA_Data = select(PlacementData, "MBA_Grade", "JobStatus")
+MBA_Data = mutate(MBA_Data, Year = ifelse(is.na(MBA_Grade), NA, "MBA_Grade"), Grade = MBA_Grade)
+MBA_Data1 = select(MBA_Data, "Grade", "JobStatus", "Year")
+All_Grades = rbind(SE_Data1, HSE_Data1, UG_Data1, MBA_Data1)
+ggplot(All_Grades,aes(x=JobStatus, y=Grade, fill=Year)) +
+  geom_boxplot() +
+  stat_boxplot(geom = 'errorbar')
+```
+This graph shows the relationship between average grade in each level of education and Job Placement. This visualization would appear to indicate that individuals that have been placed in the job market performed better in their secondary education, higher secondary education, undergraduate education. Yet, there doesn't appear to be a large difference in MBA grades between individuals who were placed and those that were not. This lack of difference in MBA performance intrigued us and spurred the question: What determines Job Placement? 
