@@ -1,0 +1,79 @@
+---
+title: "Final Project"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+library(modelr)
+PlacementData = read_csv('PlacementData.csv')
+```
+
+```{r}
+PlacementData %>% group_by(Gender) %>% summarize(Count=n()) %>% mutate(Percentage=Count/sum(Count)) %>% kable() 
+LogisticRegData <- mutate(PlacementData, HSE_BoE= as.factor(PlacementData$HSE_BoE),SE_BoE= as.factor(PlacementData$SE_BoE),HSE_Specialization= as.factor(PlacementData$HSE_Specialization), UG_Specialization= as.factor(PlacementData$UG_Specialization),WorkExp= as.factor(PlacementData$WorkExp),MBA_Specialization= as.factor(PlacementData$MBA_Specialization), JobStatus= as.factor(PlacementData$JobStatus), Gender = as.factor(PlacementData$Gender))
+LogisticRegData1<-select(LogisticRegData, Gender, SE_Grade, SE_BoE, HSE_Grade, HSE_BoE, HSE_Specialization, UG_Grade, UG_Specialization, WorkExp, EmploymentTest, MBA_Specialization, MBA_Grade, JobStatus)
+kable(LogisticRegData1 [1:10, 1:13]) 
+```
+
+
+```{r}
+LogisticRegData <- mutate(PlacementData, HSE_BoE= as.factor(PlacementData$HSE_BoE),SE_BoE= as.factor(PlacementData$SE_BoE),HSE_Specialization= as.factor(PlacementData$HSE_Specialization), UG_Specialization= as.factor(PlacementData$UG_Specialization),WorkExp= as.factor(PlacementData$WorkExp),MBA_Specialization= as.factor(PlacementData$MBA_Specialization), JobStatus= as.factor(PlacementData$JobStatus), Gender = as.factor(PlacementData$Gender))
+LogisticRegData1<-select(LogisticRegData, Gender, SE_Grade, SE_BoE, HSE_Grade, HSE_BoE, HSE_Specialization, UG_Grade, UG_Specialization, WorkExp, EmploymentTest, MBA_Specialization, MBA_Grade, JobStatus)
+LogisticRegression <- glm(JobStatus~ ., family="binomial", data=LogisticRegData1)
+summary(LogisticRegression)
+PredictedData <- data.frame(ProbPlaced= LogisticRegression$fitted.values, JobStatus=LogisticRegData1$JobStatus)
+PredictedData <- PredictedData[order(PredictedData$ProbPlaced, decreasing=FALSE),]
+PredictedData$Rank <- 1:nrow(PredictedData)
+ggplot(data=PredictedData) + geom_point(aes(x=Rank, y=ProbPlaced, color=JobStatus), alpha=1, shape=4, stroke=2) + ylab("Predicted Probability of Job Status") 
+```
+
+
+```{r}
+PlacementData = read.csv("PlacementData.csv")
+SE_Data = select(PlacementData, "SE_Grade", "JobStatus")
+SE_Data = mutate(SE_Data, Year = ifelse(is.na(SE_Grade), NA, "SE_Grade"), Grade = SE_Grade)
+SE_Data1 = select(SE_Data, "Grade", "JobStatus", "Year")
+HSE_Data = select(PlacementData, "HSE_Grade", "JobStatus")
+HSE_Data = mutate(HSE_Data, Year = ifelse(is.na(HSE_Grade), NA, "HSE_Grade"), Grade = HSE_Grade)
+HSE_Data1 = select(HSE_Data, "Grade", "JobStatus", "Year")
+UG_Data = select(PlacementData, "UG_Grade", "JobStatus")
+UG_Data = mutate(UG_Data, Year = ifelse(is.na(UG_Grade), NA, "UG_Grade"), Grade = UG_Grade)
+UG_Data1 = select(UG_Data, "Grade", "JobStatus", "Year")
+MBA_Data = select(PlacementData, "MBA_Grade", "JobStatus")
+MBA_Data = mutate(MBA_Data, Year = ifelse(is.na(MBA_Grade), NA, "MBA_Grade"), Grade = MBA_Grade)
+MBA_Data1 = select(MBA_Data, "Grade", "JobStatus", "Year")
+All_Grades = rbind(SE_Data1, HSE_Data1, UG_Data1, MBA_Data1)
+ggplot(All_Grades,aes(x=JobStatus, y=Grade, fill=Year)) +
+  geom_boxplot() +
+  stat_boxplot(geom = 'errorbar')
+```
+This graph shows the relationship between average grade in each level of education and Job Placement. This visualization would appear to indicate that individuals that have been placed in the job market performed better in their secondary education, higher secondary education, undergraduate education. Yet, there doesn't appear to be a large difference in MBA grades between individuals who were placed and those that were not. This lack of difference in MBA performance intrigued us and spurred the question: What determines Job Placement? 
+
+
+```{r}
+RegressionData = PlacementData
+RegressionData$JobStatus <-ifelse(PlacementData$JobStatus=="Placed", 1, 0)
+RegressionData$SE_BoE <-ifelse(PlacementData$SE_BoE=="Central", 1, 0)
+RegressionData$HSE_BoE <-ifelse(PlacementData$HSE_BoE=="Central", 1, 0)
+RegressionData$WorkExp <-ifelse(PlacementData$WorkExp_1=="TRUE", 1, 0)
+RegressionData$Gender <-ifelse(PlacementData$Gender=="M", 1, 0)
+RegressionData$UG_Specialization <-ifelse(PlacementData$UG_Specialization=="Comm&Mgmt",1,0)
+RegressionData$HSE_SpecializationD1 <-ifelse(PlacementData$HSE_Specialization=="Commerce",1,0)
+RegressionData$HSE_SpecializationD2 <-ifelse(PlacementData$HSE_Specialization=="Arts",1,0)
+RegressionData$MBA_Specialization <-ifelse(PlacementData$MBA_Specialization=="Mkt&Fin",1,0)
+RegressionDataFinal <-select(RegressionData,"Gender","SE_Grade","SE_BoE","HSE_Grade", "HSE_BoE","HSE_SpecializationD1","HSE_SpecializationD2","UG_Grade", "UG_Specialization","WorkExp","EmploymentTest","MBA_Specialization","MBA_Grade","Salary")
+RegressionDataFinal <- RegressionDataFinal[complete.cases(RegressionDataFinal),]
+Regression1<-lm(Salary~Gender+MBA_Grade+WorkExp,data=RegressionDataFinal)
+summary(Regression1)
+Regression2<-lm(Salary~Gender+MBA_Grade+MBA_Specialization+WorkExp,data=RegressionDataFinal)
+summary(Regression2)
+Regression3<-lm(Salary~Gender+MBA_Grade+MBA_Specialization+WorkExp+EmploymentTest+UG_Grade+UG_Specialization,data=RegressionDataFinal)
+summary(Regression3)
+Regression4<-lm(Salary~Gender+MBA_Grade+MBA_Specialization+WorkExp+EmploymentTest+UG_Grade+UG_Specialization+HSE_SpecializationD1+HSE_SpecializationD2+HSE_BoE+HSE_Grade,data=RegressionDataFinal)
+summary(Regression4)
+Regression5<-lm(Salary~.,data=RegressionDataFinal)
+summary(Regression5)
+```
