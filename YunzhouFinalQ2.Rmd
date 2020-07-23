@@ -93,7 +93,7 @@ stepaic.model = function(data) {
 
 ```{r}
 set.seed(100)
-cv = without.NA %>% modelr::crossv_kfold(10)
+cv = without.NA %>% modelr::crossv_kfold(18)
 pred = cv %>% dplyr::mutate(model1 = map(train, glm.model1),
                             model2 = map(train, glm.model2), 
                             model3 = map(train, glm.model3), 
@@ -192,13 +192,18 @@ final.table = transposed.final %>% mutate(Sensitivity = n11/(n11+n12), Specifici
 final.table
 ```
 
-We can see that from the table, the best model that gives a lowest false positive rate is `bestglm.mod5`, with the following predictors: 
+```{r}
+mod4 = glm.model4(without.NA)
+mod4
+```
+
+We can see that from the table, the best model that gives a lowest false positive rate is `bestglm.mod4`, with the following predictors: 
 
 - SE_Grade
 - HSE_Grade
 - UG_Grade
 - MBA_Grade
-- SE_BoE
+- UG_specialization
 - WorkExp
 
 and we apply this model to the overall dataset: 
@@ -206,7 +211,7 @@ and we apply this model to the overall dataset:
 ```{r}
 
 # Add plot here
-last.model = glm.model5(without.NA)
+last.model = glm.model4(without.NA)
 prediction = without.NA
 prediction$prediction = predict(last.model, prediction, type="response")
 prediction = prediction %>% mutate(prediction = ifelse(prediction >= 0.5, 1, 0)) %>% mutate(correctness=ifelse(prediction == PlaceStatus, TRUE, FALSE))
