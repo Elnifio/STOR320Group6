@@ -192,7 +192,16 @@ final.table = transposed.final %>% mutate(Sensitivity = n11/(n11+n12), Specifici
 final.table
 ```
 
-We can see that from the table, the best model that gives a lowest false positive rate is `bestglm.mod5`, and we apply this model to the overall dataset: 
+We can see that from the table, the best model that gives a lowest false positive rate is `bestglm.mod5`, with the following predictors: 
+
+- SE_Grade
+- HSE_Grade
+- UG_Grade
+- MBA_Grade
+- SE_BoE
+- WorkExp
+
+and we apply this model to the overall dataset: 
 
 ```{r}
 
