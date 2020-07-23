@@ -1,0 +1,368 @@
+---
+title: "Final Paper"
+author: "STOR 320.(01 OR 02) Group PLACE_GROUP_NUMBER_HERE (Ex: STOR 320.01 Group 12)"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+#Put Necessary Libraries Here
+library(broom)
+library(modelr)
+library(leaps)
+library(bestglm)
+library(ggplot2)
+library(purrr)
+
+# Import Data Below
+# read_csv()
+
+PlacementData = read_csv('PlacementData.csv')
+
+without.NA =  PlacementData %>% dplyr::select(-Salary, -WorkExp_1) %>% na.omit() %>% mutate(PlaceStatus = ifelse(JobStatus=="Placed", 1, 0)) %>% dplyr::select(-JobStatus)
+full.model = glm(PlaceStatus~., data=without.NA, family="binomial")
+best.model = MASS::stepAIC(full.model, trace=FALSE)
+
+
+```
+
+# INTRODUCTION
+
+As many students graduate from their various degree programs, whether graduate or undergraduate, there is often debate over what to pursue next career-wise. For our group specifically, we will be graduating from our individual undergraduate degree programs and are interested in what factors are beneficial as an applicant.  When an individual is searching for employment opportunities, one hopes that their undergraduate or graduate degree would be advantageous to their candidacy for these jobs, especially high-paying jobs. We were interested in what factors determine whether individuals were placed in jobs as well as how these factors impact starting salary.
+
+During our original analysis of the dataset, we examined many variables relating to secondary education, undergraduate education, and graduate education. However, the most interesting parts of our analysis was the relationship between variables and job placement, and the salary of those who were placed. With the evolving job market and the evolution of new jobs and fields, this information is also helpful to see how changes in degree specialization have changed along with the job market. Additionally, we found that the fluctuations with salary in relation to other variables such as secondary education grades and degree type. 
+
+To further understand these questions, we examined many relationships between variables such as undergraduate degree specialization, undergraduate grades, secondary school grades, and many more. Two questions that we are specifically interested in are “What determines if individuals are placed?” and “Can we predict the salary of those who are placed?” These two questions are particularly interesting because they provide us with the tools to better understand the implications of choosing specific undergraduate specializations or majors, the grades we receive during secondary education and undergraduate education, as well as other choices made during secondary, undergraduate, and graduate education. 
+
+
+# DATA
+
+Our data came from Kaggle, a community of data scientists that upload datasets to be explored by the community.  Ben Roshan, the uploader, is a student from Jain University Bangalore and was provided with the dataset from Dr. Dhimant Ganatara, a professor on campus. Specifically, the faculty collected the data from Jain University’s MBA program. It contains 15 variables in total, but we excluded the variable serial number as it only served as an arbitrary listing number applied to each student. 
+
+The dataset contains several categorical variables: Gender, Secondary School Board of Education, Higher Secondary School Board of Education, Specialization in Higher Secondary Education, Undergraduate Degree Type, Post-Graduation Specialization, Work Experience, and Placement Status. Gender uses “M” and “F” to refer to male or female. In our analyses, the dummy Gender variable has an index of 0 = “F” and 1 = “M”. The Board of Education variables are similar between Secondary School and Higher Secondary Education. Central Boards of Education within India are preferred by parents because they focus on science and math, teachers instruct classes in English and Hindi, and there is standardized grading across all central boards of education. While, the alternative within the Board of Education variables is “Others”, the other refers to state boards. These typically focus on culture and state level topics, teachers instruct in English and the regional language, and focus on more practical subjects. They are the equivalent of 10th and 12th grade in the United States. Within our analyses, the dummy Board of Education variables have an index of 0 equals “Others” and 1 equals “Central”. The Specialization in Higher Secondary Education, Undergraduate Degree Type, and Post-Graduation Specialization list the specializations of each individual during each level of education. The variable Work Experience indicates whether or not an individual has had relevant work experience. In our analyses, we convert this to a binary variable with a value of 1 indicating “has work experience” and 0 “not having work experience.” Finally, the Placement Status variable is a binary variable that displays whether or not an individual has accepted a job offer for his post-MBA work. 
+
+Additionally, the dataset contains a few numerical variables: Secondary Education Percentage, Higher-Secondary Education Percentage, MBA Degree Percentage, Employability Test, and Salary. In this dataset, percentages refer to the grade an individual received during the specified level of education. These grades are percentages out of 100. The employability test is a test conducted by Jain University and measures the job readiness of an individual, it includes an aptitude test and a group discussion section. The higher the percentage, the more likely Jain University believes that the individual is ready to be employed. Salary refers to the yearly salary offered by a corporation to the individual for his post-MBA career. One issue with salary is that there are 67 individuals who have not yet been placed and therefore have no salary. 
+
+```{r echo=F}
+head(PlacementData %>% select(-WorkExp_1), 10) %>% knitr::kable()
+```
+
+There are a total of 215 individuals within the data. Each variable is complete with relevant information with the exception of Salary. The previous table shows the first 10 rows of our data. The table below shows the percentage of males v. females in the dataset which could indicate gender bias. 
+
+```{r echo=F, warning=F, message=F}
+PlacementData %>% group_by(Gender) %>% summarize(Count=n()) %>% mutate(Percentage=Count/sum(Count)) %>% knitr::kable()
+```
+
+This following graph shows the relationship between average grade in each level of education and Job Placement. This visualization would appear to indicate that individuals that have been placed in the job market performed better in their secondary education, higher secondary education, undergraduate education. Yet, there doesn't appear to be a large difference in MBA grades between individuals who were placed and those that were not. This lack of difference in MBA performance intrigued us and spurred the question: What else determines Job Placement? 
+	
+```{r echo=F}
+SE_Data = select(PlacementData, "SE_Grade", "JobStatus")
+SE_Data = mutate(SE_Data, Year = ifelse(is.na(SE_Grade), NA, "SE_Grade"), Grade = SE_Grade)
+SE_Data1 = select(SE_Data, "Grade", "JobStatus", "Year")
+HSE_Data = select(PlacementData, "HSE_Grade", "JobStatus")
+HSE_Data = mutate(HSE_Data, Year = ifelse(is.na(HSE_Grade), NA, "HSE_Grade"), Grade = HSE_Grade)
+HSE_Data1 = select(HSE_Data, "Grade", "JobStatus", "Year")
+UG_Data = select(PlacementData, "UG_Grade", "JobStatus")
+UG_Data = mutate(UG_Data, Year = ifelse(is.na(UG_Grade), NA, "UG_Grade"), Grade = UG_Grade)
+UG_Data1 = select(UG_Data, "Grade", "JobStatus", "Year")
+MBA_Data = select(PlacementData, "MBA_Grade", "JobStatus")
+MBA_Data = mutate(MBA_Data, Year = ifelse(is.na(MBA_Grade), NA, "MBA_Grade"), Grade = MBA_Grade)
+MBA_Data1 = select(MBA_Data, "Grade", "JobStatus", "Year")
+All_Grades = rbind(SE_Data1, HSE_Data1, UG_Data1, MBA_Data1)
+ggplot(All_Grades,aes(x=JobStatus, y=Grade, fill=Year)) +
+  geom_boxplot() +
+  stat_boxplot(geom = 'errorbar')
+```
+
+# RESULTS
+
+### “What determines if individuals are placed?” 
+
+In order to understand whether or not an individual would be placed, we created models to best fit our data. To do this, we performed a stepwise model selection (stepAIC) that allowed us to choose which variables would be most useful in a model. This resulted in a formula that included Gender, Secondary Education Grade, Higher Secondary Education grade, Undergraduate Grade, Undergraduate Specialization, and Work Experience and MBA Grade as variables. We also performed a bestglm function to obtain the best subset of variables for other models of the dataset. In total, we obtained one model from the stepAIC function and five models from the bestglm function, each of them corresponds to a formula provided below: 
+
+```{r echo=F}
+glm.model1 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+WorkExp, data=data, family="binomial"))
+}
+glm.model2 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+Gender+UG_Specialization+WorkExp, data=data, family="binomial"))
+}
+glm.model3 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+Gender+WorkExp, data=data, family="binomial"))
+}
+glm.model4 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+UG_Specialization+WorkExp, data=data, family="binomial"))
+}
+glm.model5 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+SE_BoE+WorkExp, data=data, family="binomial"))
+}
+stepaic.model = function(data) {
+  return(glm(PlaceStatus~Gender+SE_Grade+HSE_Grade+UG_Grade+UG_Specialization+WorkExp+MBA_Grade, family="binomial", data=data))
+}
+
+tostr = function(fn, data) {
+  mod = fn(data)$formula
+  strs = as.character(mod)
+  return(paste(strs[2], strs[1], strs[3], sep=" "))
+}
+x = matrix(c("bestglm.model1", "bestglm.model2", "bestglm.model3", "bestglm.model4", "bestglm.model5", "stepAIC.model", 1:6), 6, 2)
+
+x[1, 2] = tostr(glm.model1, without.NA)
+x[2, 2] = tostr(glm.model2, without.NA)
+x[3, 2] = tostr(glm.model3, without.NA)
+x[4, 2] = tostr(glm.model4, without.NA)
+x[5, 2] = tostr(glm.model5, without.NA)
+x[6, 2] = tostr(stepaic.model, without.NA)
+x %>% data.frame() %>% dplyr::rename(Model=X1, Formula=X2) %>% knitr::kable()
+```
+
+To understand which model we created was the best fit for our data, we used 18-fold cross validation in order to compare the models based on their sensitivity, specificity, false positive rate (FPR), and false negative rate (FNR). 
+
+```{r echo=F, warning=F}
+set.seed(100)
+cv = without.NA %>% modelr::crossv_kfold(18)
+pred = cv %>% dplyr::mutate(model1 = map(train, glm.model1),
+                            model2 = map(train, glm.model2), 
+                            model3 = map(train, glm.model3), 
+                            model4 = map(train, glm.model4), 
+                            model5 = map(train, glm.model5), 
+                            model6 = map(train, stepaic.model))
+pred.value = pred %>% 
+  dplyr::mutate(predict1=map2(test, model1, ~augment(.y, newdata=.x, type.predict="response")), 
+                predict2=map2(test, model2, ~augment(.y, newdata=.x, type.predict="response")),
+                predict3=map2(test, model3, ~augment(.y, newdata=.x, type.predict="response")),
+                predict4=map2(test, model4, ~augment(.y, newdata=.x, type.predict="response")),
+                predict5=map2(test, model5, ~augment(.y, newdata=.x, type.predict="response")),
+                predict6=map2(test, model6, ~augment(.y, newdata=.x, type.predict="response")),) 
+
+model1 = pred.value %>% 
+  dplyr::select(predict1) %>% 
+  unnest() %>%
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model2 = pred.value %>% 
+  dplyr::select(predict2) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model3 = pred.value %>% 
+  dplyr::select(predict3) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model4 = pred.value %>% 
+  dplyr::select(predict4) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model5 = pred.value %>% 
+  dplyr::select(predict5) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model6 = pred.value %>% 
+  dplyr::select(predict6) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+         placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+result1 = table(model1$placed, model1$predicted) %>% 
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result2 = table(model2$placed, model2$predicted) %>% 
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result3 = table(model3$placed, model3$predicted) %>% 
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result4 = table(model4$placed, model4$predicted) %>% 
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result5 = table(model5$placed, model5$predicted) %>%
+  prop.table() %>%
+  data.frame() %>%
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result6 = table(model6$placed, model6$predicted) %>%
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+part1 = left_join(result1, result2, by="status", suffix=c("1", "2"))
+part2 = left_join(result3, result4, by="status", suffix=c("3", "4"))
+part3 = left_join(result5, result6, by="status", suffix=c("5", "6"))
+final.result = left_join(left_join(part1, part2, by="status"), part3, by="status") %>% select(status, everything()) %>% rename(bestglm.mod1 = Freq1, bestglm.mod2 = Freq2, bestglm.mod3 = Freq3, bestglm.mod4 = Freq4, bestglm.mod5 = Freq5, stepAIC.mod = Freq6) 
+# final.result
+transposed.final = data.frame(t(final.result[, 2:7])) %>% dplyr::rename(n21=X1, n11=X2, n22=X3, n12=X4) %>% mutate(Model=rownames(.)) %>% select(Model, everything())
+# transposed.final
+final.table = transposed.final %>% mutate(Sensitivity = n11/(n11+n12), Specificity=n22/(n21+n22), FPR = n21/(n21+n22), FNR = n12/(n12+n11)) %>% select(-n21, -n22, -n11, -n12)
+
+final.table %>% knitr::kable()
+```
+
+From this table, we can understand that the highest sensitivity, lowest sensitivity, lowest false positive rate, and lowest false negative rate, i.e. the best model, is Model 4, which has the formula **`r tostr(glm.model4, without.NA)`**. We then applied this model to the dataset and plotted the actual versus predicted value. From this plot, we can see that a majority of the predictions are correct (those shown in blue). 
+
+```{r echo=F}
+last.model = glm.model4(without.NA)
+prediction = without.NA
+prediction$prediction = predict(last.model, prediction, type="response")
+prediction = prediction %>% mutate(prediction = ifelse(prediction >= 0.5, 1, 0)) %>% mutate(correctness=ifelse(prediction == PlaceStatus, TRUE, FALSE))
+
+
+ggplot(data=prediction, mapping=aes(x=prediction, y=PlaceStatus, color=correctness))+
+  geom_jitter() +
+  ggtitle("Distribution of predicted values vs actual values") + 
+  xlab("Predicted Values") + 
+  ylab("Actual Values")
+```
+
+### “Can we predict the salary of those who are placed?”
+
+For our second question, we aimed to understand whether or not we could predict the salary of those individuals who are placed. We sought to do this by creating models that would take in the most useful variables and produce predicted values that would closely resemble the actual salary variables in the data set. To do this, we used the regsubsets function to identify what model with which variables would be the best fit. After running this function, we then chose those models with the lowest, Mallows’ Cp, Bayesian Information Criteria (BIC), and residual sum of squares, as well as the highest Adjusted R-Squared from the regsubsets function. 
+
+This led us to create five models, each with a different number and combination of variables. We used k-fold cross validation to understand the best model to predict salary. Each of these models included Gender and MBA Grade, the most variables in one model being 13 and least being 2. The Job Status variable was excluded from this analysis because of its collinearity with salary. 
+
+```{r echo=F}
+#FromNoah
+RegressionData = PlacementData
+RegressionData$JobStatus <-ifelse(PlacementData$JobStatus=="Placed", 1, 0)
+RegressionData$SE_BoE <-ifelse(PlacementData$SE_BoE=="Central", 1, 0)
+RegressionData$HSE_BoE <-ifelse(PlacementData$HSE_BoE=="Central", 1, 0)
+RegressionData$WorkExp <-ifelse(PlacementData$WorkExp_1=="TRUE", 1, 0)
+RegressionData$Gender <-ifelse(PlacementData$Gender=="M", 1, 0)
+RegressionData$UG_Specialization <-ifelse(PlacementData$UG_Specialization=="Comm&Mgmt",1,0)
+RegressionData$HSE_SpecializationD1 <-ifelse(PlacementData$HSE_Specialization=="Commerce",1,0)
+RegressionData$HSE_SpecializationD2 <-ifelse(PlacementData$HSE_Specialization=="Arts",1,0)
+RegressionData$MBA_Specialization <-ifelse(PlacementData$MBA_Specialization=="Mkt&Fin",1,0)
+RegressionDataFinal <-select(RegressionData,"Gender","SE_Grade","SE_BoE","HSE_Grade", "HSE_BoE","HSE_SpecializationD1","HSE_SpecializationD2","UG_Grade", "UG_Specialization","WorkExp","EmploymentTest","MBA_Specialization","MBA_Grade","Salary")
+RegressionDataFinal <- RegressionDataFinal[complete.cases(RegressionDataFinal),]
+models <- regsubsets(Salary~.,data=RegressionDataFinal, nvmax=13)
+# summary(models)
+
+res.sum <- summary(models)
+# data.frame(
+#   Adj.R2 = which.max(res.sum$adjr2),
+#   CP = which.min(res.sum$cp),
+#   BIC = which.min(res.sum$bic), 
+#  RSQ = which.max(res.sum$rsq),
+#   RSS = which.min(res.sum$rss)
+# )
+
+#13 Variables
+Model1 <-function(data) {glm(Salary~.,data=data)}
+#12 Variables
+Model2<-function(data) {glm((Salary)~(Gender+SE_Grade+SE_BoE+HSE_BoE+HSE_SpecializationD1+HSE_SpecializationD2+UG_Grade+UG_Specialization+EmploymentTest+MBA_Specialization+MBA_Grade),data=data)}
+#6 Variables
+Model3 <- function(data){glm((Salary)~Gender+HSE_SpecializationD2+UG_Grade+UG_Specialization+MBA_Specialization+MBA_Grade, data=data)}
+#3 Variables
+Model4 <- function(data) {glm((Salary)~Gender+UG_Specialization+MBA_Grade, data=data)}
+#2 Variables
+Model5 <- function(data) {glm((Salary)~Gender+MBA_Grade, data=data)}
+
+x = matrix(c("FullModel", "Model2", "Model3", "Model4", "Model5", 1:5), 5, 2)
+
+x[1, 2] = tostr(Model1, RegressionDataFinal)
+x[2, 2] = tostr(Model2, RegressionDataFinal)
+x[3, 2] = tostr(Model3, RegressionDataFinal)
+x[4, 2] = tostr(Model4, RegressionDataFinal)
+x[5, 2] = tostr(Model5, RegressionDataFinal)
+x %>% data.frame() %>% dplyr::rename(Model=X1, Formula=X2) %>% knitr::kable()
+```
+
+Each of these model having Root Mean Squared Error calculated below, with the best model as `Model5` since it has the lowest RMSE, with its residual plot also provided.  
+
+```{r echo=F, warning=F}
+RMSE.func = function(actual, predict) {
+  mse = mean((actual - predict)^2, na.rm=T)
+  rmse = sqrt(mse)
+  return(rmse)
+}
+
+#I'm trying to cross validate here
+set.seed(100)
+cv = RegressionDataFinal %>% modelr::crossv_kfold(13)
+pred = cv %>% dplyr::mutate(pmodel1 = map(train, Model1),
+                            pmodel2 = map(train, Model2), 
+                            pmodel3 = map(train, Model3), 
+                            pmodel4 = map(train, Model4), 
+                            pmodel5 = map(train, Model5))
+pred.value = pred %>% 
+  dplyr::mutate(predict1=map2(test, pmodel1, ~augment(.y, newdata=.x)), 
+                predict2=map2(test, pmodel2, ~augment(.y, newdata=.x)),
+                predict3=map2(test, pmodel3, ~augment(.y, newdata=.x)),
+                predict4=map2(test, pmodel4, ~augment(.y, newdata=.x)),
+                predict5=map2(test, pmodel5, ~augment(.y, newdata=.x)))
+
+model1 = pred.value %>% select(predict1) %>% unnest()
+model2 = pred.value %>% select(predict2) %>% unnest()
+model3 = pred.value %>% select(predict3) %>% unnest()
+model4 = pred.value %>% select(predict4) %>% unnest()
+model5 = pred.value %>% select(predict5) %>% unnest()
+
+rmse.table = matrix(rep(1:5, each=2), 2, 5)
+rmse.table[2, 1] = RMSE.func(model1$Salary, (model1$.fitted))
+rmse.table[2, 2] = RMSE.func(model2$Salary, (model2$.fitted))
+rmse.table[2, 3] = RMSE.func(model3$Salary, (model3$.fitted))
+rmse.table[2, 4] = RMSE.func(model4$Salary, (model4$.fitted))
+rmse.table[2, 5] = RMSE.func(model5$Salary, (model5$.fitted))
+rmse = rmse.table %>% data.frame() %>% dplyr::rename(Model1 = X1, Model2 = X2, Model3 = X3, Model4 = X4, Model5 = X5) %>% .[2, ]
+rownames(rmse) <- c("RMSE")
+rmse %>% knitr::kable()
+```
+
+```{r echo=F, warning=F}
+RegressionDataFinal %>% add_residuals(Model5(RegressionDataFinal)) %>% ggplot(mapping=aes(x=Salary,y=resid))+
+  geom_point(alpha=0.5)+
+  ggtitle("Residual Distribution vs. Salary for Model 5")+
+  ylab("Residuals")+
+  xlab("Salary")+
+  theme(legend.position = "none")+
+  geom_line(aes(y=rep(0, nrow(RegressionDataFinal)), colour="red"))
+```
+
+However, after plotting the residuals, there are clearly some issues with the model. There are some **outliers** that the model cannot compensate for. After much analysis and adding interaction terms, polynomial terms, and doing data transformations, we were unable to build a better model for salary. Considering the figure below plotting all salary data points, there are some obvious outliers that significantly affected our models. Also, the sample size of the individuals who did have a salary observation was very small, which may have affected our models. Nevertheless, there were some positive aspects to come out of this analysis. It was very interesting to note that all models included both the Gender and MBA Grade variables. The implications of this could lead to further analysis of the relationship between these variables and salary. 
+
+
+```{r echo=F}
+ggplot(RegressionDataFinal)+
+  geom_point(aes(x=as.numeric(row.names(RegressionDataFinal)),y=Salary),alpha=0.5)+
+  ggtitle("All Salary Data Points")+
+  xlab("Indices")
+```
+
+
+# CONCLUSION
+
+The first question we looked at was “What determines whether or not an individual was placed into a job?” We modeled a logistic regression to best fit our data. We found that the model that best predicted job placement included: Gender, Secondary Education Grade, Higher Secondary Education grade, Undergraduate Grade, Undergraduate Specialization, and Work Experience and MBA Grade. Out of the five models we created with the bestglm function, which subsets our dataset, we found that the best model was model 4 which included the Secondary Education Grade, Higher Secondary Education Grade, Undergraduate Grade, MBA Grade, Undergraduate Specialization, and Work Experience. Based upon the performance of this model, we can conclude that one’s grades throughout their entire education can be indicators of whether or not a person will be placed into a job after an MBA education. This is particularly important because it can affect how valuable students feel grade performance is to job placement, which may cause increased stress and affect the health of a student. This conclusion was expected, the Job Placement v. Grade by Education Level plot appeared to indicate that higher grades throughout one’s education could lead to a higher probability of placement.
+
+
+The second question we investigated was, “Can we predict the salary of those who are placed?” We modeled 5 different subsets of the data and cross validated the data. After doing so, we found that the model that worked the best model included Gender and MBA Grade as determinants. However, in our model we were not able to accurately predict the salary of an individual that was placed, this was likely due to low sample size and extreme outliers. Also, the residuals from our plot were very large. There’s likely more historical data from Jain University Bangalore about their previous MBA cohorts that we didn’t have access to. Methods that we didn’t use that could have worked better are CNN and SVM methods. 
+
+
+
+
+
+
+
+

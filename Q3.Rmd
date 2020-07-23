@@ -83,10 +83,12 @@ RMSE.func = function(actual, predict) {
   return(rmse)
 }
 
+RegressionDataFinal2 = RegressionDataFinal[c(1:83, 85:148), ]
+
 
 #I'm trying to cross validate here
 set.seed(100)
-cv = RegressionDataFinal %>% modelr::crossv_kfold(13)
+cv = RegressionDataFinal2 %>% modelr::crossv_kfold(13)
 pred = cv %>% dplyr::mutate(pmodel1 = map(train, Model1),
                             pmodel2 = map(train, Model2), 
                             pmodel3 = map(train, Model3), 
@@ -115,7 +117,7 @@ rmse.table %>% data.frame() %>% dplyr::rename(Model1 = X1, Model2 = X2, Model3 =
 ```
 
 ```{r}
-RegressionDataFinal %>% add_residuals(Model5(RegressionDataFinal)) %>% ggplot(mapping=aes(x=Salary, y=resid))+geom_point(alpha=0.5)+geom_line(aes(y=rep(0, nrow(RegressionDataFinal)), colour="red"))
+RegressionDataFinal2 %>% add_residuals(Model5(RegressionDataFinal2)) %>% ggplot(mapping=aes(x=Salary, y=resid))+geom_point(alpha=0.5)+geom_line(aes(y=rep(0, nrow(RegressionDataFinal2)), colour="red"))
 ```
 
 ```{r}
@@ -125,3 +127,18 @@ as.data.frame(Predict)
 ggplot(Predict, aes(x))+
   geom_dotplot()
 ```
+
+
+```{r}
+test.model = lm(log(Salary)~polym(SE_Grade, HSE_Grade, UG_Grade, MBA_Grade, degree=3)+., data=RegressionDataFinal)
+r = RegressionDataFinal
+r %>% add_predictions(test.model) %>% mutate(resid=Salary - exp(pred)) %>% ggplot(mapping=aes(x=Salary, y=resid))+geom_point()+geom_line(aes(y=rep(0, nrow(r)), colour="red"))
+
+summary(test.model)
+```
+
+```{r}
+plot(Salary~EmploymentTest, data=RegressionDataFinal)
+
+```
+
