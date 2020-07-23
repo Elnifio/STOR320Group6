@@ -1,0 +1,127 @@
+---
+title: "Q3"
+author: "Camryn Blawas"
+date: "7/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(modelr)
+library(leaps)
+library(bestglm)
+library(ggplot2)
+library(broom)
+library(purrr)
+PlacementData = read_csv('PlacementData.csv')
+```
+
+```{r, echo=FALSE}
+#FromNoah
+RegressionData = PlacementData
+RegressionData$JobStatus <-ifelse(PlacementData$JobStatus=="Placed", 1, 0)
+RegressionData$SE_BoE <-ifelse(PlacementData$SE_BoE=="Central", 1, 0)
+RegressionData$HSE_BoE <-ifelse(PlacementData$HSE_BoE=="Central", 1, 0)
+RegressionData$WorkExp <-ifelse(PlacementData$WorkExp_1=="TRUE", 1, 0)
+RegressionData$Gender <-ifelse(PlacementData$Gender=="M", 1, 0)
+RegressionData$UG_Specialization <-ifelse(PlacementData$UG_Specialization=="Comm&Mgmt",1,0)
+RegressionData$HSE_SpecializationD1 <-ifelse(PlacementData$HSE_Specialization=="Commerce",1,0)
+RegressionData$HSE_SpecializationD2 <-ifelse(PlacementData$HSE_Specialization=="Arts",1,0)
+RegressionData$MBA_Specialization <-ifelse(PlacementData$MBA_Specialization=="Mkt&Fin",1,0)
+RegressionDataFinal <-select(RegressionData,"Gender","SE_Grade","SE_BoE","HSE_Grade", "HSE_BoE","HSE_SpecializationD1","HSE_SpecializationD2","UG_Grade", "UG_Specialization","WorkExp","EmploymentTest","MBA_Specialization","MBA_Grade","Salary")
+RegressionDataFinal <- RegressionDataFinal[complete.cases(RegressionDataFinal),]
+```
+
+```{r, echo=FALSE}
+#did not include JobStatus
+models <- regsubsets(Salary~.,data=RegressionDataFinal, nvmax=13)
+summary(models)
+
+res.sum <- summary(models)
+data.frame(
+  Adj.R2 = which.max(res.sum$adjr2),
+  CP = which.min(res.sum$cp),
+  BIC = which.min(res.sum$bic), 
+  RSQ = which.max(res.sum$rsq),
+  RSS = which.min(res.sum$rss)
+)
+```
+
+```{r, echo=FALSE}
+#13 Variables
+Model1 <-function(data) {glm(Salary~.,data=data)}
+#12 Variables
+Model2<-function(data) {glm(Salary~(Gender+SE_Grade+SE_BoE+HSE_BoE+HSE_SpecializationD1+HSE_SpecializationD2+UG_Grade+UG_Specialization+EmploymentTest+MBA_Specialization+MBA_Grade),data=data)}
+#6 Variables
+Model3 <- function(data){glm(Salary~Gender+HSE_SpecializationD2+UG_Grade+UG_Specialization+MBA_Specialization+MBA_Grade, data=data)}
+#3 Variables
+Model4 <- function(data) {glm(Salary~Gender+UG_Specialization+MBA_Grade, data=data)}
+#2 Variables
+Model5 <- function(data) {glm(Salary~Gender+MBA_Grade, data=data)}
+```
+
+```{r}
+#RegressionNames
+#Models <- c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5")
+#RSquaredValues
+#LOGMeanSquaredErrors
+#LogMSES <- c(log(mse(Model1, RegressionDataFinal)),log(mse(Model2, RegressionDataFinal)), log(mse(Model3, RegressionDataFinal)), log(mse(Model4, RegressionDataFinal)), log(mse(Model5, RegressionDataFinal)))
+#MeanAbsoluteErrors
+#MAES <- c((mae(Model1, RegressionDataFinal)),(mae(Model2, RegressionDataFinal)), (mae(Model3, RegressionDataFinal)), (mae(Model4, RegressionDataFinal)), (mae(Model5, RegressionDataFinal)))
+#
+#create tibble
+#Errors <- data.frame(Models, LogMSES, MAES)
+#Errors
+```
+
+
+```{r}
+RMSE.func = function(actual, predict) {
+  mse = mean((actual - predict)^2, na.rm=T)
+  rmse = sqrt(mse)
+  return(rmse)
+}
+
+
+#I'm trying to cross validate here
+set.seed(100)
+cv = RegressionDataFinal %>% modelr::crossv_kfold(13)
+pred = cv %>% dplyr::mutate(pmodel1 = map(train, Model1),
+                            pmodel2 = map(train, Model2), 
+                            pmodel3 = map(train, Model3), 
+                            pmodel4 = map(train, Model4), 
+                            pmodel5 = map(train, Model5))
+pred.value = pred %>% 
+  dplyr::mutate(predict1=map2(test, pmodel1, ~augment(.y, newdata=.x)), 
+                predict2=map2(test, pmodel2, ~augment(.y, newdata=.x)),
+                predict3=map2(test, pmodel3, ~augment(.y, newdata=.x)),
+                predict4=map2(test, pmodel4, ~augment(.y, newdata=.x)),
+                predict5=map2(test, pmodel5, ~augment(.y, newdata=.x)))
+
+model1 = pred.value %>% select(predict1) %>% unnest()
+model2 = pred.value %>% select(predict2) %>% unnest()
+model3 = pred.value %>% select(predict3) %>% unnest()
+model4 = pred.value %>% select(predict4) %>% unnest()
+model5 = pred.value %>% select(predict5) %>% unnest()
+
+rmse.table = matrix(rep(1:5, each=2), 2, 5)
+rmse.table[2, 1] = RMSE.func(model1$Salary, model1$.fitted)
+rmse.table[2, 2] = RMSE.func(model2$Salary, model2$.fitted)
+rmse.table[2, 3] = RMSE.func(model3$Salary, model3$.fitted)
+rmse.table[2, 4] = RMSE.func(model4$Salary, model4$.fitted)
+rmse.table[2, 5] = RMSE.func(model5$Salary, model5$.fitted)
+rmse.table %>% data.frame() %>% dplyr::rename(Model1 = X1, Model2 = X2, Model3 = X3, Model4 = X4, Model5 = X5) %>% .[2, ]
+```
+
+```{r}
+
+```
+
+```{r}
+?predict.glm
+Predict <- predict.lm(Model1)
+as.data.frame(Predict)
+ggplot(Predict, aes(x))+
+  geom_dotplot()
+```
