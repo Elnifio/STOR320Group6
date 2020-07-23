@@ -239,12 +239,12 @@ ggplot(data=prediction, mapping=aes(x=prediction, y=PlaceStatus, color=correctne
 
 ### “Can we predict the salary of those who are placed?”
 
-For our second question, we aimed to understand whether or not we could predict the salary of those individuals who are placed. We sought to do this by creating models that would take in the most useful variables and produce predicted values that would closely resemble the actual salary variables in the data set. To do this, we used the regsubsets function to identify what model with which variables would be the best fit. After running this function, we then chose those models with the lowest, Mallows’ Cp, Bayesian Information Criteria (BIC), and residual sum of squares, as well as the highest Adjusted R-Squared from the regsubsets function. 
+For our second question, we aimed to understand whether or not we could predict the salary of those individuals who are placed. We sought to do this by creating models that would take in the most useful variables and produce predicted values that would closely resemble the actual salary variables in the data set. To do this, we used the regsubsets function to identify what model with which variables would be the best fit. After running this function, we then chose those models with the lowest Mallows’ Cp, Bayesian Information Criteria (BIC), and residual sum of squares, as well as models with the highest Adjusted R-Squared from the regsubsets function. 
 
-This led us to create five models, each with a different number and combination of variables. We used k-fold cross validation to understand the best model to predict salary. Each of these models included Gender and MBA Grade, the most variables in one model being 13 and least being 2. The Job Status variable was excluded from this analysis because of its collinearity with salary. 
+This led us to create five linear models, each with a different number and combination of variables. We used 13-fold cross validation to understand the best model to predict salary. Each of these models include Gender and MBA Grade, with complete formulae defined in the table below. The Job Status variable was excluded from this analysis because of its collinearity with salary. 
 
 ```{r echo=F}
-#FromNoah
+#DummyVariables
 RegressionData = PlacementData
 RegressionData$JobStatus <-ifelse(PlacementData$JobStatus=="Placed", 1, 0)
 RegressionData$SE_BoE <-ifelse(PlacementData$SE_BoE=="Central", 1, 0)
@@ -299,7 +299,7 @@ RMSE.func = function(actual, predict) {
   return(rmse)
 }
 
-#I'm trying to cross validate here
+#Cross Validation
 set.seed(100)
 cv = RegressionDataFinal %>% modelr::crossv_kfold(13)
 pred = cv %>% dplyr::mutate(pmodel1 = map(train, Model1),
