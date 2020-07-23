@@ -24,7 +24,6 @@ We first perform a stepwise model selection through `stepAIC` function running o
 without.NA =  PlacementData %>% dplyr::select(-Salary, -WorkExp_1) %>% na.omit() %>% mutate(PlaceStatus = ifelse(JobStatus=="Placed", 1, 0)) %>% dplyr::select(-JobStatus)
 full.model = glm(PlaceStatus~., data=without.NA, family="binomial")
 best.model = MASS::stepAIC(full.model, trace=FALSE)
-summary(best.model)
 ```
 
 From the result above, we can see that the formula for prediction involves the following variables: 
@@ -87,6 +86,26 @@ glm.model5 = function(data) {
 }
 stepaic.model = function(data) {
   return(glm(PlaceStatus~Gender+SE_Grade+HSE_Grade+UG_Grade+UG_Specialization+WorkExp+MBA_Grade, family="binomial", data=data))
+}
+```
+
+```{r}
+tostr = function(fn) {
+  mod = fn(without.NA)$formula
+  strs = as.character(mod)
+  return(paste(strs[2], strs[1], strs[3], sep=" "))
+}
+x = matrix(c("bestglm.model1", "bestglm.model2", "bestglm.model3", "bestglm.model4", "bestglm.model5", "stepAIC.model", 1:6), 6, 2)
+
+x[1, 2] = tostr(glm.model1)
+x[2, 2] = tostr(glm.model2)
+x[3, 2] = tostr(glm.model3)
+x[4, 2] = tostr(glm.model4)
+x[5, 2] = tostr(glm.model5)
+x[6, 2] = tostr(stepaic.model)
+for(k in 1:6)
+{
+  print(paste(x[k, 1], x[k, 2], sep=" Formula: "))
 }
 ```
 

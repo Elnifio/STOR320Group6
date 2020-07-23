@@ -80,7 +80,7 @@ ggplot(All_Grades,aes(x=JobStatus, y=Grade, fill=Year)) +
 
 ### “What determines if individuals are placed?” 
 
-In order to understand whether or not an individual would be placed, we created models to best fit our data. To do this, we performed a stepwise model selection (stepAIC) that allowed us to choose which variables would be most useful in a model. This resulted in a formula that included Gender, Secondary Education Grade, Higher Secondary Education grade, Undergraduate Grade, Undergraduate Specialization, and Work Experience and MBA Grade as variables. We also performed a bestglm function to obtain the best subset of variables for other models of the dataset. In total, we obtained one model from the stepAIC function and five models from the bestglm function, each of them corresponds to a formula provided below: 
+In order to understand whether or not an individual would be placed, we created models to best fit our data. To do this, we performed a stepwise model selection (*stepAIC*) that allowed us to choose which variables would be most useful in a model. This resulted in a formula that included Gender, Secondary Education Grade, Higher Secondary Education grade, Undergraduate Grade, Undergraduate Specialization, Work Experience and MBA Grade as variables. We also performed a *bestglm* method to obtain the best subset of variables for other models of the dataset. In total, we obtained one model from the stepAIC function and five models from the bestglm function, each of them corresponds to a formula provided below: 
 
 ```{r echo=F}
 glm.model1 = function(data) {
@@ -118,7 +118,7 @@ x[6, 2] = tostr(stepaic.model, without.NA)
 x %>% data.frame() %>% dplyr::rename(Model=X1, Formula=X2) %>% knitr::kable()
 ```
 
-To understand which model we created was the best fit for our data, we used 18-fold cross validation in order to compare the models based on their sensitivity, specificity, false positive rate (FPR), and false negative rate (FNR). 
+To understand which model we created was the best fit for our data, we used **18-fold cross validation** in order to compare the models based on their sensitivity, specificity, false positive rate (FPR), and false negative rate (FNR). 
 
 ```{r echo=F, warning=F}
 set.seed(100)
@@ -221,7 +221,7 @@ final.table = transposed.final %>% mutate(Sensitivity = n11/(n11+n12), Specifici
 final.table %>% knitr::kable()
 ```
 
-From this table, we can understand that the highest sensitivity, lowest sensitivity, lowest false positive rate, and lowest false negative rate, i.e. the best model, is Model 4, which has the formula **`r tostr(glm.model4, without.NA)`**. We then applied this model to the dataset and plotted the actual versus predicted value. From this plot, we can see that a majority of the predictions are correct (those shown in blue). 
+From this table, we can understand that the highest sensitivity, lowest sensitivity, lowest false positive rate, and lowest false negative rate, i.e. the best model, is **Model 4**, which has the formula **`r tostr(glm.model4, without.NA)`**. We then applied this model to the dataset and plotted the actual versus predicted value. From this plot, we can see that a majority of the predictions are correct (those shown in blue). 
 
 ```{r echo=F}
 last.model = glm.model4(without.NA)
@@ -342,7 +342,6 @@ RegressionDataFinal %>% add_residuals(Model5(RegressionDataFinal)) %>% ggplot(ma
 ```
 
 However, after plotting the residuals, there are clearly some issues with the model. There are some **outliers** that the model cannot compensate for. After much analysis and adding interaction terms, polynomial terms, and doing data transformations, we were unable to build a better model for salary. Considering the figure below plotting all salary data points, there are some obvious outliers that significantly affected our models. Also, the sample size of the individuals who did have a salary observation was very small, which may have affected our models. Nevertheless, there were some positive aspects to come out of this analysis. It was very interesting to note that all models included both the Gender and MBA Grade variables. The implications of this could lead to further analysis of the relationship between these variables and salary. 
-
 
 ```{r echo=F}
 ggplot(RegressionDataFinal)+
