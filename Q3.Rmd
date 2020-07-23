@@ -62,21 +62,6 @@ Model5 <- function(data) {glm((Salary)~Gender+MBA_Grade, data=data)}
 ```
 
 ```{r}
-#RegressionNames
-#Models <- c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5")
-#RSquaredValues
-#LOGMeanSquaredErrors
-#LogMSES <- c(log(mse(Model1, RegressionDataFinal)),log(mse(Model2, RegressionDataFinal)), log(mse(Model3, RegressionDataFinal)), log(mse(Model4, RegressionDataFinal)), log(mse(Model5, RegressionDataFinal)))
-#MeanAbsoluteErrors
-#MAES <- c((mae(Model1, RegressionDataFinal)),(mae(Model2, RegressionDataFinal)), (mae(Model3, RegressionDataFinal)), (mae(Model4, RegressionDataFinal)), (mae(Model5, RegressionDataFinal)))
-#
-#create tibble
-#Errors <- data.frame(Models, LogMSES, MAES)
-#Errors
-```
-
-
-```{r}
 RMSE.func = function(actual, predict) {
   mse = mean((actual - predict)^2, na.rm=T)
   rmse = sqrt(mse)
@@ -86,7 +71,7 @@ RMSE.func = function(actual, predict) {
 RegressionDataFinal2 = RegressionDataFinal[c(1:83, 85:148), ]
 
 
-#I'm trying to cross validate here
+#Cross Validation
 set.seed(100)
 cv = RegressionDataFinal2 %>% modelr::crossv_kfold(13)
 pred = cv %>% dplyr::mutate(pmodel1 = map(train, Model1),
@@ -118,14 +103,19 @@ rmse.table %>% data.frame() %>% dplyr::rename(Model1 = X1, Model2 = X2, Model3 =
 
 ```{r}
 RegressionDataFinal2 %>% add_residuals(Model5(RegressionDataFinal2)) %>% ggplot(mapping=aes(x=Salary, y=resid))+geom_point(alpha=0.5)+geom_line(aes(y=rep(0, nrow(RegressionDataFinal2)), colour="red"))
+ggplot(RegressionDataFinal)+
+  geom_point(aes(x=as.numeric(row.names(RegressionDataFinal)),y=Salary),alpha=0.5)+
+  ggtitle("All Salary Data Points")+
+  xlab("Indices")
 ```
 
 ```{r}
-?predict.glm
-Predict <- predict.lm(Model1)
-as.data.frame(Predict)
-ggplot(Predict, aes(x))+
-  geom_dotplot()
+RegressionDataFinal %>% add_residuals(Model5(RegressionDataFinal)) %>% ggplot(mapping=aes(x=Salary,y=resid))+
+  geom_point(alpha=0.5)+
+  ggtitle("")+
+  ylab("Residuals")+
+  theme(legend.position = "none")+
+  geom_line(aes(y=rep(0, nrow(RegressionDataFinal)), colour="red"))
 ```
 
 
