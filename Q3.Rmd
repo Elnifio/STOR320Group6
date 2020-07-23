@@ -52,13 +52,13 @@ data.frame(
 #13 Variables
 Model1 <-function(data) {glm(Salary~.,data=data)}
 #12 Variables
-Model2<-function(data) {glm(Salary~(Gender+SE_Grade+SE_BoE+HSE_BoE+HSE_SpecializationD1+HSE_SpecializationD2+UG_Grade+UG_Specialization+EmploymentTest+MBA_Specialization+MBA_Grade),data=data)}
+Model2<-function(data) {glm((Salary)~(Gender+SE_Grade+SE_BoE+HSE_BoE+HSE_SpecializationD1+HSE_SpecializationD2+UG_Grade+UG_Specialization+EmploymentTest+MBA_Specialization+MBA_Grade),data=data)}
 #6 Variables
-Model3 <- function(data){glm(Salary~Gender+HSE_SpecializationD2+UG_Grade+UG_Specialization+MBA_Specialization+MBA_Grade, data=data)}
+Model3 <- function(data){glm((Salary)~Gender+HSE_SpecializationD2+UG_Grade+UG_Specialization+MBA_Specialization+MBA_Grade, data=data)}
 #3 Variables
-Model4 <- function(data) {glm(Salary~Gender+UG_Specialization+MBA_Grade, data=data)}
+Model4 <- function(data) {glm((Salary)~Gender+UG_Specialization+MBA_Grade, data=data)}
 #2 Variables
-Model5 <- function(data) {glm(Salary~Gender+MBA_Grade, data=data)}
+Model5 <- function(data) {glm((Salary)~Gender+MBA_Grade, data=data)}
 ```
 
 ```{r}
@@ -106,16 +106,16 @@ model4 = pred.value %>% select(predict4) %>% unnest()
 model5 = pred.value %>% select(predict5) %>% unnest()
 
 rmse.table = matrix(rep(1:5, each=2), 2, 5)
-rmse.table[2, 1] = RMSE.func(model1$Salary, model1$.fitted)
-rmse.table[2, 2] = RMSE.func(model2$Salary, model2$.fitted)
-rmse.table[2, 3] = RMSE.func(model3$Salary, model3$.fitted)
-rmse.table[2, 4] = RMSE.func(model4$Salary, model4$.fitted)
-rmse.table[2, 5] = RMSE.func(model5$Salary, model5$.fitted)
+rmse.table[2, 1] = RMSE.func(model1$Salary, (model1$.fitted))
+rmse.table[2, 2] = RMSE.func(model2$Salary, (model2$.fitted))
+rmse.table[2, 3] = RMSE.func(model3$Salary, (model3$.fitted))
+rmse.table[2, 4] = RMSE.func(model4$Salary, (model4$.fitted))
+rmse.table[2, 5] = RMSE.func(model5$Salary, (model5$.fitted))
 rmse.table %>% data.frame() %>% dplyr::rename(Model1 = X1, Model2 = X2, Model3 = X3, Model4 = X4, Model5 = X5) %>% .[2, ]
 ```
 
 ```{r}
-
+RegressionDataFinal %>% add_residuals(Model5(RegressionDataFinal)) %>% ggplot(mapping=aes(x=Salary, y=resid))+geom_point(alpha=0.5)+geom_line(aes(y=rep(0, nrow(RegressionDataFinal)), colour="red"))
 ```
 
 ```{r}
