@@ -192,11 +192,6 @@ final.table = transposed.final %>% mutate(Sensitivity = n11/(n11+n12), Specifici
 final.table
 ```
 
-```{r}
-mod4 = glm.model4(without.NA)
-mod4
-```
-
 We can see that from the table, the best model that gives a lowest false positive rate is `bestglm.mod4`, with the following predictors: 
 
 - SE_Grade
