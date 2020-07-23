@@ -92,24 +92,116 @@ stepaic.model = function(data) {
 
 
 ```{r}
-# CAN'T WORK
 set.seed(100)
-cv = rearranged.NA %>% modelr::crossv_kfold(4)
-# pred = DATA2 %>% 
-#       mutate(tr.model = map(train, train.model.func, I=i, J=j)) 
-#     pred.value = pred %>% 
-#       mutate(predict=map2(test, tr.model, ~augment(.y, newdata=.x))) %>% 
-#       select(predict) %>%
-#       unnest()
-#     OUT.RMSE[i, j] = RMSE.func(actual=pred.value$W, predict=pred.value$.fitted)
-pred = cv %>% dplyr::mutate(model1 = map(train, glm.model1))
-pred.value = pred %>% dplyr::mutate(predict=map2(test, model1, ~augment(.y, newdata=.x))) %>% dplyr::select(predict) %>% dplyr::unnest()
-pred.value
-    
+cv = without.NA %>% modelr::crossv_kfold(10)
+pred = cv %>% dplyr::mutate(model1 = map(train, glm.model1),
+                            model2 = map(train, glm.model2), 
+                            model3 = map(train, glm.model3), 
+                            model4 = map(train, glm.model4), 
+                            model5 = map(train, glm.model5), 
+                            model6 = map(train, stepaic.model))
+pred.value = pred %>% 
+  dplyr::mutate(predict1=map2(test, model1, ~augment(.y, newdata=.x, type.predict="response")), 
+                predict2=map2(test, model2, ~augment(.y, newdata=.x, type.predict="response")),
+                predict3=map2(test, model3, ~augment(.y, newdata=.x, type.predict="response")),
+                predict4=map2(test, model4, ~augment(.y, newdata=.x, type.predict="response")),
+                predict5=map2(test, model5, ~augment(.y, newdata=.x, type.predict="response")),
+                predict6=map2(test, model6, ~augment(.y, newdata=.x, type.predict="response")),) 
 
+model1 = pred.value %>% 
+  dplyr::select(predict1) %>% 
+  unnest() %>%
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model2 = pred.value %>% 
+  dplyr::select(predict2) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model3 = pred.value %>% 
+  dplyr::select(predict3) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model4 = pred.value %>% 
+  dplyr::select(predict4) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model5 = pred.value %>% 
+  dplyr::select(predict5) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+    placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+model6 = pred.value %>% 
+  dplyr::select(predict6) %>% 
+  unnest() %>% 
+  mutate(
+    predicted = ifelse(.fitted >= 0.5, "will Place", "wont Place"), 
+         placed = ifelse(PlaceStatus > 0.5, "Placed", "Not Placed")) 
+
+result1 = table(model1$placed, model1$predicted) %>% 
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result2 = table(model2$placed, model2$predicted) %>% 
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result3 = table(model3$placed, model3$predicted) %>% 
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result4 = table(model4$placed, model4$predicted) %>% 
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result5 = table(model5$placed, model5$predicted) %>%
+  prop.table() %>%
+  data.frame() %>%
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+result6 = table(model6$placed, model6$predicted) %>%
+  prop.table() %>% 
+  data.frame() %>% 
+  transmute(Freq, status = paste(Var1, Var2, sep=":"))
+
+part1 = left_join(result1, result2, by="status", suffix=c("1", "2"))
+part2 = left_join(result3, result4, by="status", suffix=c("3", "4"))
+part3 = left_join(result5, result6, by="status", suffix=c("5", "6"))
+final.result = left_join(left_join(part1, part2, by="status"), part3, by="status") %>% select(status, everything()) %>% rename(bestglm.mod1 = Freq1, bestglm.mod2 = Freq2, bestglm.mod3 = Freq3, bestglm.mod4 = Freq4, bestglm.mod5 = Freq5, stepAIC.mod = Freq6) 
+# final.result
+transposed.final = data.frame(t(final.result[, 2:7])) %>% dplyr::rename(n21=X1, n11=X2, n22=X3, n12=X4) %>% mutate(model=rownames(.)) %>% select(model, everything())
+# transposed.final
+final.table = transposed.final %>% mutate(Sensitivity = n11/(n11+n12), Specificity=n22/(n21+n22), fpr = n21/(n21+n22), fnr = n12/(n12+n11)) %>% select(-n21, -n22, -n11, -n12)
+
+final.table
 ```
 
+We can see that from the table, the best model that gives a lowest false positive rate is `bestglm.mod5`, and we apply this model to the overall dataset: 
 
+```{r}
+
+# Add plot here
+last.model = glm.model5(without.NA)
+prediction = without.NA
+prediction$prediction = predict(last.model, prediction, type="response")
+
+```
 
 
 
