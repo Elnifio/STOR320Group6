@@ -1,0 +1,121 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r warning=F, message=F} 
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(broom)
+
+# Import Data Below
+# read_csv()
+
+PlacementData = read_csv('PlacementData.csv')
+```
+
+### Q2: What determines if individuals are placed?
+
+We first perform a stepwise model selection through `stepAIC` function running on full dataset. 
+
+```{r}
+without.NA =  PlacementData %>% dplyr::select(-Salary, -WorkExp_1) %>% na.omit() %>% mutate(PlaceStatus = ifelse(JobStatus=="Placed", 1, 0)) %>% dplyr::select(-JobStatus)
+full.model = glm(PlaceStatus~., data=without.NA, family="binomial")
+best.model = MASS::stepAIC(full.model, trace=FALSE)
+summary(best.model)
+```
+
+From the result above, we can see that the formula for prediction involves the following variables: 
+
+- Gender
+- SE_Grade
+- HSE_Grade
+- UG_Grade
+- UG_Specialization
+- WorkExp
+
+And we perform a test to see its significance. 
+
+```{r include=F}
+G = best.model$null.deviance - best.model$deviance
+Gdf = best.model$df.null - best.model$df.residual
+1-pchisq(G, Gdf)
+```
+
+We also perform `bestglm` function onto the dataset and obtain sub-models. 
+
+```{r}
+rearranged.NA = without.NA %>% 
+  dplyr::mutate(
+    Gender=as.factor(Gender),
+    SE_BoE=as.factor(SE_BoE),
+    HSE_BoE=as.factor(HSE_BoE),
+    HSE_Specialization=as.factor(HSE_Specialization),
+    UG_Specialization=as.factor(UG_Specialization),
+    WorkExp=as.factor(WorkExp),
+    MBA_Specialization=as.factor(MBA_Specialization)
+  ) %>% 
+  fastDummies::dummy_cols(
+    c("Gender", "SE_BoE", "HSE_BoE", "HSE_Specialization", "UG_Specialization", "WorkExp", "MBA_Specialization"),
+    remove_first_dummy=TRUE) %>% 
+  dplyr::select(where(is.numeric)) %>% 
+  .[,c(1:5, 7:15, 6)] %>% 
+  data.frame()
+best.glms = bestglm::bestglm(rearranged.NA, family=binomial)
+best.glms$BestModels
+```
+
+
+
+```{r}
+glm.model1 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+WorkExp, data=data, family="binomial"))
+}
+glm.model2 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+Gender+UG_Specialization+WorkExp, data=data, family="binomial"))
+}
+glm.model3 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+Gender+WorkExp, data=data, family="binomial"))
+}
+glm.model4 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+UG_Specialization+WorkExp, data=data, family="binomial"))
+}
+glm.model5 = function(data) {
+  return(glm(PlaceStatus~SE_Grade+HSE_Grade+UG_Grade+MBA_Grade+SE_BoE+WorkExp, data=data, family="binomial"))
+}
+stepaic.model = function(data) {
+  return(glm(PlaceStatus~Gender+SE_Grade+HSE_Grade+UG_Grade+UG_Specialization+WorkExp+MBA_Grade, family="binomial", data=data))
+}
+```
+
+
+```{r}
+# CAN'T WORK
+set.seed(100)
+cv = rearranged.NA %>% modelr::crossv_kfold(4)
+# pred = DATA2 %>% 
+#       mutate(tr.model = map(train, train.model.func, I=i, J=j)) 
+#     pred.value = pred %>% 
+#       mutate(predict=map2(test, tr.model, ~augment(.y, newdata=.x))) %>% 
+#       select(predict) %>%
+#       unnest()
+#     OUT.RMSE[i, j] = RMSE.func(actual=pred.value$W, predict=pred.value$.fitted)
+pred = cv %>% dplyr::mutate(model1 = map(train, glm.model1))
+pred.value = pred %>% dplyr::mutate(predict=map2(test, model1, ~augment(.y, newdata=.x))) %>% dplyr::select(predict) %>% dplyr::unnest()
+pred.value
+    
+
+```
+
+
+
+
+
+
+
+
+
+
+
