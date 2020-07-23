@@ -1,6 +1,6 @@
 ---
 title: "Final Paper"
-author: "STOR 320.(01 OR 02) Group PLACE_GROUP_NUMBER_HERE (Ex: STOR 320.01 Group 12)"
+author: "STOR 320.01 Group 6"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 ---
